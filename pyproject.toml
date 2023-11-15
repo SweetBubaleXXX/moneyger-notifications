@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "moneyger-notifications"
+version = "0.1.0"
+description = ""
+authors = ["SweetBubaleXXX <70811772+SweetBubaleXXX@users.noreply.github.com>"]
+license = "MIT"
+readme = "README.md"
+packages = [{include = "moneyger_notifications"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+flask = "^3.0.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
