@@ -10,6 +10,9 @@ packages = [{include = "moneyger_notifications"}]
 [tool.poetry.dependencies]
 python = "^3.11"
 flask = "^3.0.0"
+dependency-injector = "^4.41.0"
+pydantic-settings = "^2.1.0"
+pydantic = "^2.5.0"
 
 
 [build-system]
