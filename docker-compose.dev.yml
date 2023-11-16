@@ -1,0 +1,13 @@
+version: "3.8"
+
+services:
+  db:
+    extends:
+      file: docker-compose.yml
+      service: db
+    restart: "no"
+    ports:
+      - "27017:27017"
+
+volumes:
+  database_data:
