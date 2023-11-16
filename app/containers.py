@@ -17,10 +17,9 @@ class Container(containers.DeclarativeContainer):
         config.database.url,
         username=config.database.user,
         password=config.database.password,
-        authSource="admin",
     )
     db = providers.Callable(
-        lambda db_client: db_client.get_default_database(),
-        db_client,
+        lambda db_client, default_db: db_client.get_default_database(default_db),
+        db_client, config.database.default
     )
     users_service = providers.Factory(UsersService, db)

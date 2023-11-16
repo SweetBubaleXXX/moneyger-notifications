@@ -5,6 +5,7 @@ class DatabaseSettings(BaseModel):
     url: MongoDsn
     user: str | None
     password: str | None
+    default: str = "default_db"
 
 
 class Settings(BaseSettings):

@@ -6,7 +6,7 @@ from app.services.users import UsersService
 from .factories import UserFactory
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture
 def service():
     return UsersService(container.db)
 
