@@ -3,9 +3,17 @@ from datetime import datetime
 from pydantic import BaseModel, EmailStr
 
 
-class User(BaseModel):
+class UserCredentials(BaseModel):
+    token: str
     email: EmailStr
+
+
+class UserSettings(BaseModel):
     subscribed_to_chat: bool = False
+
+
+class User(UserCredentials, UserSettings):
+    pass
 
 
 class Message(BaseModel):

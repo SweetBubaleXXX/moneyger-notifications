@@ -13,6 +13,11 @@ def mock_database():
 
 
 @pytest.fixture
+def db():
+    return container.db()
+
+
+@pytest.fixture
 def app():
     app = create_app()
     app.testing = True
