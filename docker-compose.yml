@@ -13,5 +13,12 @@ services:
     volumes:
       - database_data:/data/db
 
+  redis:
+    image: redis:7-alpine
+    command: redis-server --loglevel notice --requirepass ${REDIS_PASSWORD:?}
+    restart: unless-stopped
+    expose:
+      - 6379
+
 volumes:
   database_data:

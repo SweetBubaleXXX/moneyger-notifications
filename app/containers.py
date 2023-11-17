@@ -1,3 +1,4 @@
+import redis
 from dependency_injector import containers, providers
 from pymongo import MongoClient
 
@@ -18,8 +19,10 @@ class Container(containers.DeclarativeContainer):
         username=config.database.user,
         password=config.database.password,
     )
-    db = providers.Callable(
+    db = providers.Singleton(
         lambda db_client, default_db: db_client.get_default_database(default_db),
-        db_client, config.database.default
+        db_client,
+        config.database.default,
     )
+    cache = providers.Singleton(redis.from_url, config.cache.url)
     users_service = providers.Factory(UsersService, db)
