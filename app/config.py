@@ -15,6 +15,7 @@ class CacheSettings(BaseModel):
 class Settings(BaseSettings):
     database: DatabaseSettings
     cache: CacheSettings
+    message_storage_max_size: int = 100
 
     class Config:
         env_file = ".env"

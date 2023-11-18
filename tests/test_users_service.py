@@ -1,7 +1,7 @@
 import pytest
 from pymongo.database import Database
 
-from app.application import container
+from app.containers import Container
 from app.models import User, UserCredentials
 from app.services.users import AlreadyExists, NotFound, UsersService
 
@@ -9,7 +9,7 @@ from .factories import UserFactory
 
 
 @pytest.fixture
-def service():
+def service(container: Container):
     return UsersService(container.db)
 
 

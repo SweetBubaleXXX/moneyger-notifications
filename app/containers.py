@@ -3,6 +3,7 @@ from dependency_injector import containers, providers
 from pymongo import MongoClient
 
 from .services.users import UsersService
+from .services.messages import RedisMessageStorage
 
 
 class Container(containers.DeclarativeContainer):
@@ -26,3 +27,8 @@ class Container(containers.DeclarativeContainer):
     )
     cache = providers.Singleton(redis.from_url, config.cache.url)
     users_service = providers.Factory(UsersService, db)
+    message_storage = providers.Factory(
+        RedisMessageStorage,
+        cache,
+        config.message_storage_max_size,
+    )
