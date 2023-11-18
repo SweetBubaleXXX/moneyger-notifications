@@ -10,3 +10,4 @@ class UserFactory(factory.Factory):
 
     token = FuzzyText(length=32)
     email = factory.Faker("email")
+    subscribed_to_chat = False

@@ -41,6 +41,28 @@ def test_get_user_by_credentials(
         service.get_user_by_credentials(invalid_credentials)
 
 
+def test_filter_users_not_found(
+    service: UsersService,
+    user: User,
+):
+    result = service.filter_users({"email": user.email})
+    assert list(result) == []
+
+
+def test_filter_users(
+    db: Database,
+    service: UsersService,
+):
+    user_count = 10
+    for i in range(user_count):
+        user = UserFactory(subscribed_to_chat=i % 2)
+        db.users.insert_one(user.dict())
+    result = list(service.filter_users({"subscribed_to_chat": True}))
+    assert len(result) == user_count / 2
+    for user in result:
+        assert user.subscribed_to_chat
+
+
 def test_create_user(
     db: Database,
     service: UsersService,

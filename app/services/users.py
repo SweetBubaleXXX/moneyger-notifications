@@ -1,4 +1,4 @@
-from typing import Callable, Mapping
+from typing import Any, Callable, Iterator, Mapping
 
 from pymongo import ReturnDocument
 from pymongo.database import Database
@@ -26,6 +26,11 @@ class UsersService:
     def get_user_by_credentials(self, credentials: UserCredentials) -> User:
         user = self.collection.find_one(credentials.dict())
         return self._return_user_or_error(user)
+
+    def filter_users(self, filters: Mapping[str, Any]) -> Iterator[User]:
+        cursor = self.collection.find(filters)
+        for user in cursor:
+            yield User(**user)
 
     def create_user(self, user: User) -> User:
         existing_user = self.collection.find_one({"email": user.email})
