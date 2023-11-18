@@ -17,7 +17,11 @@ class User(UserCredentials, UserSettings):
 
 
 class Message(BaseModel):
+    id: str
     sender: str
     from_admin: bool
     text: str
     timestamp: datetime
+
+    def __hash__(self) -> int:
+        return hash(self.id)
