@@ -1,6 +1,6 @@
 from abc import ABCMeta, abstractmethod
-from collections.abc import Collection, Iterator, Iterable
-from typing import TypeVar, Generic, Callable, Any, Self
+from collections.abc import Collection, Iterable, Iterator
+from typing import Any, Callable, Generic, Self, TypeVar
 
 from redis import Redis
 from redis.lock import Lock
@@ -15,9 +15,7 @@ class MessageStorage(Collection, Generic[T], metaclass=ABCMeta):
     on_storage_exhausted: Callable[[Self], Any] | None
 
     @abstractmethod
-    def __init__(
-        self, get_storage: Callable[..., T], storage_size_limit: int | None = None
-    ) -> None:
+    def __init__(self, storage: T, storage_size_limit: int | None = None) -> None:
         ...
 
     @abstractmethod
@@ -44,10 +42,8 @@ class RedisMessageStorage(MessageStorage):
     _LOCK_TIMEOUT = 120
     _BLOCKING_TIMEOUT = 60
 
-    def __init__(
-        self, get_storage: Callable[..., Redis], storage_size_limit: int | None = None
-    ):
-        self._redis = get_storage()
+    def __init__(self, storage: Redis, storage_size_limit: int | None = None) -> None:
+        self._redis = storage
         self.storage_size_limit = storage_size_limit
         self.on_storage_exhausted = None
         self._lock = Lock(

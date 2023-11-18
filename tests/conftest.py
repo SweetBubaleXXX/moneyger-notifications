@@ -1,3 +1,4 @@
+import fakeredis
 import mongomock
 import pytest
 from dependency_injector import providers
@@ -18,9 +19,21 @@ def mock_database(container: Container):
     container.db.reset_override()
 
 
+@pytest.fixture(scope="function", autouse=True)
+def mock_cache(container: Container):
+    container.cache.override(providers.Singleton(fakeredis.FakeRedis))
+    yield
+    container.cache.reset_override()
+
+
 @pytest.fixture
 def db(container: Container):
     return container.db()
+
+
+@pytest.fixture
+def cache(container: Container):
+    return container.cache()
 
 
 @pytest.fixture

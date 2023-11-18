@@ -2,8 +2,8 @@ import redis
 from dependency_injector import containers, providers
 from pymongo import MongoClient
 
-from .services.users import UsersService
 from .services.messages import RedisMessageStorage
+from .services.users import UsersService
 
 
 class Container(containers.DeclarativeContainer):

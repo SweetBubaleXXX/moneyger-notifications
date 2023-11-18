@@ -10,7 +10,7 @@ from .factories import UserFactory
 
 @pytest.fixture
 def service(container: Container):
-    return UsersService(container.db)
+    return container.users_service()
 
 
 @pytest.fixture

@@ -1,4 +1,4 @@
-from typing import Any, Callable, Iterator, Mapping
+from typing import Any, Iterator, Mapping
 
 from pymongo import ReturnDocument
 from pymongo.database import Database
@@ -15,8 +15,8 @@ class NotFound(BaseException):
 
 
 class UsersService:
-    def __init__(self, get_db: Callable[..., Database]):
-        self.db = get_db()
+    def __init__(self, db: Database):
+        self.db = db
         self.collection = self.db.users
 
     def get_user_by_email(self, email: str) -> User:
