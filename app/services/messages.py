@@ -66,13 +66,7 @@ class RedisMessageStorage(MessageStorage):
         with self._lock:
             messages = []
             for message_id in self._get_message_ids():
-                raw_message = self._redis.hgetall(
-                    self._MESSAGE_KEY.format(id=message_id)
-                )
-                decoded_message = {
-                    key.decode(): value.decode() for key, value in raw_message.items()
-                }
-                parsed_message = Message.parse_obj(decoded_message)
+                parsed_message = self._get_message_by_id(message_id)
                 messages.append(parsed_message)
             return messages
 
@@ -102,3 +96,10 @@ class RedisMessageStorage(MessageStorage):
         raw_ids = self._redis.zrange(self._MESSAGES_SET_KEY, 0, -1)
         for raw_message_id in raw_ids:
             yield raw_message_id.decode()
+
+    def _get_message_by_id(self, message_id: str) -> Message:
+        raw_message = self._redis.hgetall(self._MESSAGE_KEY.format(id=message_id))
+        decoded_message = {
+            key.decode(): value.decode() for key, value in raw_message.items()
+        }
+        return Message.parse_obj(decoded_message)
