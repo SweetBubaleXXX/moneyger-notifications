@@ -39,6 +39,20 @@ def test_get_all(storage: MessageStorage):
         assert message.sender == sender
 
 
+def test_remove(storage: MessageStorage, saved_message: Message):
+    storage.remove(saved_message.id)
+    assert saved_message.id not in storage
+
+
+def test_clear(storage: MessageStorage):
+    message_count = 12
+    for _ in range(message_count):
+        storage.push(MessageFactory())
+    assert len(storage) == message_count
+    storage.clear()
+    assert len(storage) == 0
+
+
 def test_len_empty(storage: MessageStorage):
     assert len(storage) == 0
 
