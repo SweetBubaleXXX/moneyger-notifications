@@ -9,7 +9,7 @@ from app.containers import Container
 
 @pytest.fixture()
 def container():
-    return application.create_container()
+    return application.create_container(testing=True)
 
 
 @pytest.fixture(scope="function", autouse=True)

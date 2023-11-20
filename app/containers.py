@@ -16,16 +16,16 @@ class Container(containers.DeclarativeContainer):
     config = providers.Configuration()
     db_client = providers.Singleton(
         MongoClient,
-        config.database.url,
-        username=config.database.user,
-        password=config.database.password,
+        config.database_url,
+        username=config.database_user,
+        password=config.database_password,
     )
     db = providers.Singleton(
         lambda db_client, default_db: db_client.get_default_database(default_db),
         db_client,
-        config.database.default,
+        config.default_database,
     )
-    cache = providers.Singleton(redis.from_url, config.cache.url)
+    cache = providers.Singleton(redis.from_url, config.cache_url)
     users_service = providers.Factory(UsersService, db)
     message_storage = providers.Factory(
         RedisMessageStorage,
