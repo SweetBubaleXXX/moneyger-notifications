@@ -67,7 +67,7 @@ class RedisMessageStorage(MessageStorage[Redis]):
     def __len__(self) -> int:
         return int(self._storage.zcard(self._MESSAGES_SET_KEY))
 
-    def __contains__(self, message_id: str) -> bool:
+    def __contains__(self, message_id: object) -> bool:
         return bool(self._storage.zscore(self._MESSAGES_SET_KEY, message_id))
 
     def __iter__(self) -> Iterator[Message]:
@@ -85,7 +85,7 @@ class RedisMessageStorage(MessageStorage[Redis]):
         message_key = self._MESSAGE_KEY.format(id=message.id)
         with self._lock:
             if len(self) == self.storage_size_limit:
-                return self.on_storage_exhausted and self.on_storage_exhausted()
+                return self._notify_storage_exhausted()
             self._storage.hset(message_key, mapping=message.dict_of_str())
             self._storage.zadd(
                 self._MESSAGES_SET_KEY, {message.id: message.timestamp.timestamp()}
