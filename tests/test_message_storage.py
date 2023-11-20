@@ -1,3 +1,5 @@
+from unittest.mock import MagicMock
+
 import pytest
 
 from app.containers import Container
@@ -63,3 +65,11 @@ def test_contains(storage: MessageStorage, saved_message: Message):
 
 def test_not_contains(storage: MessageStorage, message: Message):
     assert message.id not in storage
+
+
+def test_storage_exhausted_listener(storage: MessageStorage):
+    listener_mock = MagicMock()
+    storage.add_storage_exhausted_listener(listener_mock)
+    for _ in range(storage.storage_size_limit):
+        storage.push(MessageFactory())
+    listener_mock.assert_called_once_with(storage)

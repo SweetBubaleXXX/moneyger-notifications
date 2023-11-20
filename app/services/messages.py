@@ -84,7 +84,7 @@ class RedisMessageStorage(MessageStorage[Redis]):
     def push(self, message: Message) -> None:
         message_key = self._MESSAGE_KEY.format(id=message.id)
         with self._lock:
-            if len(self) == self.storage_size_limit:
+            if len(self) == self.storage_size_limit - 1:
                 return self._notify_storage_exhausted()
             self._storage.hset(message_key, mapping=message.dict_of_str())
             self._storage.zadd(
