@@ -8,5 +8,6 @@ class UserFactory(factory.Factory):
     class Meta:
         model = models.User
 
-    token = FuzzyText(length=32)
+    account_id = factory.Sequence(int)
     email = factory.Faker("email")
+    token = FuzzyText(length=32)

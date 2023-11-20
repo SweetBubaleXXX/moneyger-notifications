@@ -19,8 +19,8 @@ class UsersService:
         self.db = get_db()
         self.collection = self.db.users
 
-    def get_user_by_email(self, email: str) -> User:
-        user = self.collection.find_one({"email": email})
+    def get_user_by_id(self, account_id: int) -> User:
+        user = self.collection.find_one({"account_id": account_id})
         return self._return_user_or_error(user)
 
     def get_user_by_credentials(self, credentials: UserCredentials) -> User:
@@ -28,7 +28,7 @@ class UsersService:
         return self._return_user_or_error(user)
 
     def create_user(self, user: User) -> User:
-        existing_user = self.collection.find_one({"email": user.email})
+        existing_user = self.collection.find_one({"account_id": user.account_id})
         if existing_user:
             raise AlreadyExists()
         self.collection.insert_one(user.dict())
@@ -45,8 +45,8 @@ class UsersService:
         )
         return self._return_user_or_error(updated_user)
 
-    def delete_user(self, email: str) -> None:
-        delete_result = self.collection.delete_one({"email": email})
+    def delete_user(self, account_id: int) -> None:
+        delete_result = self.collection.delete_one({"account_id": account_id})
         if not delete_result.deleted_count:
             raise NotFound()
 

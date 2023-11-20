@@ -4,8 +4,9 @@ from pydantic import BaseModel, EmailStr
 
 
 class UserCredentials(BaseModel):
-    token: str
+    account_id: int
     email: EmailStr
+    token: str
 
 
 class UserSettings(BaseModel):
