@@ -57,27 +57,31 @@ class RedisMessageStorage(MessageStorage):
         return int(self._redis.zcard(self._MESSAGES_SET_KEY))
 
     def __contains__(self, message_id: str) -> bool:
-        return self._redis.sismember(self._MESSAGES_SET_KEY, message_id)
+        return bool(self._redis.zscore(self._MESSAGES_SET_KEY, message_id))
 
     def __iter__(self) -> Iterator[Message]:
         return iter(self.get_all())
 
     def get_all(self) -> Iterable[Message]:
         with self._lock:
-            messages = self._get_message_ids()
-            loaded_messages = []
-            for message_id in messages:
-                raw_message = self._redis.hgetall(self._MESSAGE_KEY.format(message_id))
-                parsed_message = Message.parse_obj(raw_message)
-                loaded_messages.append(parsed_message)
-            return loaded_messages
+            messages = []
+            for message_id in self._get_message_ids():
+                raw_message = self._redis.hgetall(
+                    self._MESSAGE_KEY.format(id=message_id)
+                )
+                decoded_message = {
+                    key.decode(): value.decode() for key, value in raw_message.items()
+                }
+                parsed_message = Message.parse_obj(decoded_message)
+                messages.append(parsed_message)
+            return messages
 
     def push(self, message: Message) -> None:
-        message_key = self._MESSAGE_KEY.format(message.id)
+        message_key = self._MESSAGE_KEY.format(id=message.id)
         with self._lock:
             if len(self) == self.storage_size_limit:
                 return self.on_storage_exhausted and self.on_storage_exhausted()
-            self._redis.hset(message_key, mapping=message.dict())
+            self._redis.hset(message_key, mapping=message.dict_of_str())
             self._redis.zadd(
                 self._MESSAGES_SET_KEY, {message.id: message.timestamp.timestamp()}
             )
@@ -85,14 +89,16 @@ class RedisMessageStorage(MessageStorage):
     def remove(self, message_id: str) -> None:
         with self._lock:
             self._redis.zrem(self._MESSAGES_SET_KEY, message_id)
-            self._redis.delete(self._MESSAGE_KEY.format(message_id))
+            self._redis.delete(self._MESSAGE_KEY.format(id=message_id))
 
     def clear(self) -> None:
         with self._lock:
             messages = self._get_message_ids()
             for message_id in messages:
-                self._redis.delete(self._MESSAGE_KEY.format(message_id))
+                self._redis.delete(self._MESSAGE_KEY.format(id=message_id))
             self._redis.delete(self._MESSAGES_SET_KEY)
 
-    def _get_message_ids(self) -> Iterable[str]:
-        return self._redis.zrange(self._MESSAGES_SET_KEY, 0, -1)
+    def _get_message_ids(self) -> Iterator[str]:
+        raw_ids = self._redis.zrange(self._MESSAGES_SET_KEY, 0, -1)
+        for raw_message_id in raw_ids:
+            yield raw_message_id.decode()

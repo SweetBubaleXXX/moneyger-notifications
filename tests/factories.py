@@ -23,4 +23,4 @@ class MessageFactory(factory.Factory):
     sender = factory.Faker("first_name")
     from_admin = False
     text = factory.Faker("sentence")
-    timestamp = factory.LazyAttribute(datetime.utcnow)
+    timestamp = factory.LazyAttribute(lambda *_: datetime.utcnow())

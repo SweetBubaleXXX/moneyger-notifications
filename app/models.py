@@ -25,3 +25,6 @@ class Message(BaseModel):
 
     def __hash__(self) -> int:
         return hash(self.id)
+
+    def dict_of_str(self) -> dict[str, str]:
+        return {key: str(value) for key, value in self}
