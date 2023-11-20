@@ -24,11 +24,11 @@ def saved_user(db: Database, user: User):
     return user
 
 
-def test_get_user_by_email(
+def test_get_user_by_id(
     service: UsersService,
     saved_user: User,
 ):
-    found_user = service.get_user_by_email(saved_user.email)
+    found_user = service.get_user_by_id(saved_user.account_id)
     assert found_user.token == saved_user.token
 
 
@@ -36,7 +36,11 @@ def test_get_user_by_credentials(
     service: UsersService,
     saved_user: User,
 ):
-    invalid_credentials = UserCredentials(email=saved_user.email, token="invalid_token")
+    invalid_credentials = UserCredentials(
+        account_id=0,
+        email=saved_user.email,
+        token="invalid_token",
+    )
     with pytest.raises(NotFound):
         service.get_user_by_credentials(invalid_credentials)
 
@@ -108,8 +112,8 @@ def test_delete_user(
     service: UsersService,
     saved_user: User,
 ):
-    service.delete_user(saved_user.email)
-    documents_in_db = db.users.count_documents({"email": saved_user.email})
+    service.delete_user(saved_user.account_id)
+    documents_in_db = db.users.count_documents({"account_id": saved_user.account_id})
     assert documents_in_db == 0
 
 
@@ -118,4 +122,4 @@ def test_delete_user_not_found(
     user: User,
 ):
     with pytest.raises(NotFound):
-        service.delete_user(user.email)
+        service.delete_user(user.account_id)
