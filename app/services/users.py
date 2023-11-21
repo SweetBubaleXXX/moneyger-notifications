@@ -23,10 +23,6 @@ class UsersService:
         user = self.collection.find_one({"account_id": account_id})
         return self._return_user_or_error(user)
 
-    def get_user_by_credentials(self, credentials: UserCredentials) -> User:
-        user = self.collection.find_one(credentials.dict())
-        return self._return_user_or_error(user)
-
     def filter_users(self, filters: Mapping[str, Any]) -> Iterator[User]:
         cursor = self.collection.find(filters)
         for user in cursor:

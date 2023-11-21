@@ -2,7 +2,7 @@ import pytest
 from pymongo.database import Database
 
 from app.containers import Container
-from app.models import User, UserCredentials
+from app.models import User
 from app.services.users import AlreadyExists, NotFound, UsersService
 
 from .factories import UserFactory
@@ -13,36 +13,12 @@ def service(container: Container):
     return container.users_service()
 
 
-@pytest.fixture
-def user():
-    return UserFactory()
-
-
-@pytest.fixture
-def saved_user(db: Database, user: User):
-    db.users.insert_one(user.dict())
-    return user
-
-
 def test_get_user_by_id(
     service: UsersService,
     saved_user: User,
 ):
     found_user = service.get_user_by_id(saved_user.account_id)
     assert found_user.token == saved_user.token
-
-
-def test_get_user_by_credentials(
-    service: UsersService,
-    saved_user: User,
-):
-    invalid_credentials = UserCredentials(
-        account_id=0,
-        email=saved_user.email,
-        token="invalid_token",
-    )
-    with pytest.raises(NotFound):
-        service.get_user_by_credentials(invalid_credentials)
 
 
 def test_filter_users_not_found(

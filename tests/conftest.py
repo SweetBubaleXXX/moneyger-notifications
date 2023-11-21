@@ -2,9 +2,13 @@ import fakeredis
 import mongomock
 import pytest
 from dependency_injector import providers
+from pymongo.database import Database
 
 from app import application
 from app.containers import Container
+from app.models import User
+
+from .factories import UserFactory
 
 
 @pytest.fixture()
@@ -38,6 +42,21 @@ def cache(container: Container):
 
 @pytest.fixture
 def app():
-    app = application.create_app()
-    app.testing = True
+    app = application.create_app(testing=True)
     return app
+
+
+@pytest.fixture()
+def client(app):
+    return app.test_client()
+
+
+@pytest.fixture
+def user():
+    return UserFactory()
+
+
+@pytest.fixture
+def saved_user(db: Database, user: User):
+    db.users.insert_one(user.dict())
+    return user

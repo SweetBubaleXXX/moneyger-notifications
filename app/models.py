@@ -17,6 +17,10 @@ class User(UserCredentials, UserSettings):
     pass
 
 
+class JwtTokenPayload(BaseModel):
+    account_id: int
+
+
 class Message(BaseModel):
     id: str
     sender: str
