@@ -10,7 +10,7 @@ from werkzeug.datastructures import WWWAuthenticate
 from werkzeug.exceptions import BadRequest, Unauthorized
 
 from ..containers import Container
-from ..models import JwtTokenPayload
+from ..models import JwtTokenPayload, User
 from ..services import users
 
 
@@ -29,15 +29,17 @@ class JwtAuthMiddleware(BaseHTTPMiddleware):
         access_token = parsed_header.get("access_token")
         if not access_token:
             raise Unauthorized(www_authenticate=self.www_authenticate)
-        self._verify_token(access_token)
+        user = self._authenticate_user(access_token)
+        request.user = user
         return call_next(request)
 
-    def _verify_token(self, token: AnyStr) -> None:
+    def _authenticate_user(self, token: AnyStr) -> User:
         try:
             token_payload = JwtTokenPayload.parse_obj(
                 jwt.decode(token, options={"verify_signature": False})
             )
             user = self.users_service.get_user_by_id(token_payload.account_id)
             jwt.decode(token, user.token, ["HS256"])
+            return user
         except (jwt.InvalidTokenError, ValidationError, users.NotFound) as exc:
             raise BadRequest("Invalid token") from exc
