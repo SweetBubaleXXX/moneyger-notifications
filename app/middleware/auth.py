@@ -39,7 +39,7 @@ class JwtAuthMiddleware(BaseHTTPMiddleware):
                 jwt.decode(token, options={"verify_signature": False})
             )
             user = self.users_service.get_user_by_id(token_payload.account_id)
-            jwt.decode(token, user.token, ["HS256"])
+            jwt.decode(token, user.token)
             return user
         except (jwt.InvalidTokenError, ValidationError, users.NotFound) as exc:
             raise BadRequest("Invalid token") from exc

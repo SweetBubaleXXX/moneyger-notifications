@@ -10,6 +10,8 @@ class Container(containers.DeclarativeContainer):
     wiring_config = containers.WiringConfiguration(
         packages=[
             ".services",
+            ".middleware",
+            ".resources",
         ],
     )
 
@@ -21,9 +23,8 @@ class Container(containers.DeclarativeContainer):
         password=config.database_password,
     )
     db = providers.Singleton(
-        lambda db_client, default_db: db_client.get_default_database(default_db),
+        lambda db_client: db_client.get_default_database("default"),
         db_client,
-        config.default_database,
     )
     cache = providers.Singleton(redis.from_url, config.cache_url)
     users_service = providers.Factory(UsersService, db)
