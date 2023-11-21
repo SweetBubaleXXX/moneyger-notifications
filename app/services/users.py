@@ -40,9 +40,8 @@ class UsersService:
         return user
 
     def update_user(self, user: User) -> User:
-        user_info = user.dict()
-        user_credentials = UserCredentials(**user_info)
-        user_settings = UserSettings(**user_info)
+        user_credentials = UserCredentials.parse_obj(user)
+        user_settings = UserSettings.parse_obj(user)
         updated_user = self.collection.find_one_and_update(
             user_credentials.dict(),
             {"$set": user_settings.dict()},
