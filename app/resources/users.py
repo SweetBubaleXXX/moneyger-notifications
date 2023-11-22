@@ -17,10 +17,12 @@ class Users(Resource):
         self.users_service = users_service
 
     def get(self, user_id: int):
-        user = self.users_service.get_user_by_id(user_id)
-        if user.account_id != request.user:
-            raise Forbidden()
-        return user.dict()
+        self._validate_request_user(user_id)
+        return request.user.dict()
 
     def post(self, user_id: int):
-        ...
+        self._validate_request_user(user_id)
+
+    def _validate_request_user(user_id: int) -> None:
+        if user_id != request.user:
+            raise Forbidden()
