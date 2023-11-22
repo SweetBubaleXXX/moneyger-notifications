@@ -4,6 +4,7 @@ from dependency_injector import containers, providers
 from pymongo import MongoClient
 
 from .consumers.user_created import UserCreatedConsumer
+from .consumers.user_credentials_rpc import UserCredentialsRpc
 from .services.messages import RedisMessageStorage
 from .services.users import UsersService
 
@@ -44,5 +45,14 @@ class Container(containers.DeclarativeContainer):
         config.mq_user_created_queue,
         config.mq_users_exchange,
         config.mq_user_created_queue_bindings,
+        users_service,
+    )
+    user_credentials_rpc = providers.Factory(
+        UserCredentialsRpc,
+        mq_connection,
+        config.mq_user_credentials_rpc_queue,
+        config.mq_users_exchange,
+        config.mq_user_credentials_rpc_queue_bindings,
+        config.mq_rpc_response_exchange,
         users_service,
     )
