@@ -1,4 +1,3 @@
-from abc import ABCMeta, abstractmethod
 from typing import Iterable
 
 import pika
@@ -8,35 +7,10 @@ from pydantic import ValidationError
 
 from ..models import User
 from ..services import users
+from .base import Consumer
 
 
-class ConsumerQueue(metaclass=ABCMeta):
-    def __init__(
-        self,
-        connection: pika.BaseConnection,
-        queue_name: str,
-        exchange_name: str,
-        binding_keys: Iterable[str],
-    ) -> None:
-        self.connection = connection
-        self.channel = connection.channel()
-        self.channel.queue_declare(queue_name, durable=True)
-        for routing_key in binding_keys:
-            self.channel.queue_bind(queue_name, exchange_name, routing_key)
-        self.channel.basic_consume(queue_name, self.callback)
-
-    @abstractmethod
-    def callback(
-        self,
-        channel: Channel,
-        method: Basic.Deliver,
-        properties: pika.BasicProperties,
-        body: bytes,
-    ) -> None:
-        ...
-
-
-class UserCreatedQueue(ConsumerQueue):
+class UserCreatedConsumer(Consumer):
     def __init__(
         self,
         connection: pika.BaseConnection,
