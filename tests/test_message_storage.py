@@ -61,6 +61,7 @@ def test_len_empty(storage: MessageStorage):
 
 def test_contains(storage: MessageStorage, saved_message: Message):
     assert saved_message.id in storage
+    assert saved_message in storage
 
 
 def test_not_contains(storage: MessageStorage, message: Message):

@@ -67,7 +67,13 @@ class RedisMessageStorage(MessageStorage[Redis]):
     def __len__(self) -> int:
         return int(self._storage.zcard(self._MESSAGES_SET_KEY))
 
-    def __contains__(self, message_id: object) -> bool:
+    def __contains__(self, message: object) -> bool:
+        if isinstance(message, str):
+            message_id = message
+        elif isinstance(message, Message):
+            message_id = message.id
+        else:
+            return False
         return bool(self._storage.zscore(self._MESSAGES_SET_KEY, message_id))
 
     def __iter__(self) -> Iterator[Message]:
