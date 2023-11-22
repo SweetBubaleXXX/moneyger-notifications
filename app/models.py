@@ -1,6 +1,9 @@
 from datetime import datetime
+from typing import Self, Type, TypeVar
 
 from pydantic import BaseModel, EmailStr
+
+T = TypeVar("T", bound=BaseModel, covariant=True)
 
 
 class UserCredentials(BaseModel):
@@ -14,7 +17,23 @@ class UserSettings(BaseModel):
 
 
 class User(UserCredentials, UserSettings):
-    pass
+    @property
+    def credentials(self) -> UserCredentials:
+        return self._construct_model(UserCredentials)
+
+    @property
+    def settings(self) -> UserSettings:
+        return self._construct_model(UserSettings)
+
+    def copy_with_updated_settings(self, settings: UserSettings) -> Self:
+        updated_user = self.copy()
+        for field, value in settings:
+            updated_user.__setattr__(field, value)
+        return updated_user
+
+    def _construct_model(self, model: Type[T]) -> T:
+        common_fields = self.dict(include=model.__fields__.keys())
+        return model.construct(**common_fields)
 
 
 class JwtTokenPayload(BaseModel):

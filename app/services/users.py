@@ -3,7 +3,7 @@ from typing import Any, Iterator, Mapping
 from pymongo import ReturnDocument
 from pymongo.database import Database
 
-from ..models import User, UserCredentials, UserSettings
+from ..models import User
 
 
 class AlreadyExists(BaseException):
@@ -36,11 +36,9 @@ class UsersService:
         return user
 
     def update_user(self, user: User) -> User:
-        user_credentials = UserCredentials.parse_obj(user)
-        user_settings = UserSettings.parse_obj(user)
         updated_user = self.collection.find_one_and_update(
-            user_credentials.dict(),
-            {"$set": user_settings.dict()},
+            user.credentials.dict(),
+            {"$set": user.settings.dict()},
             return_document=ReturnDocument.AFTER,
         )
         return self._return_user_or_error(updated_user)
