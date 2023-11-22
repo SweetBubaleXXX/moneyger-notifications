@@ -16,14 +16,14 @@ def container():
     return application.create_container(testing=True)
 
 
-@pytest.fixture(scope="function", autouse=True)
+@pytest.fixture(autouse=True)
 def mock_database(container: Container):
     container.db_client.override(providers.Singleton(mongomock.MongoClient))
     yield
-    container.db.reset_override()
+    container.db_client.reset_override()
 
 
-@pytest.fixture(scope="function", autouse=True)
+@pytest.fixture(autouse=True)
 def mock_cache(container: Container):
     container.cache.override(providers.Singleton(fakeredis.FakeRedis))
     yield
@@ -31,18 +31,18 @@ def mock_cache(container: Container):
 
 
 @pytest.fixture
-def db(container: Container):
+def db(container: Container, mock_database):
     return container.db()
 
 
 @pytest.fixture
-def cache(container: Container):
+def cache(container: Container, mock_cache):
     return container.cache()
 
 
 @pytest.fixture
-def app():
-    app = application.create_app(testing=True)
+def app(container: Container, mock_database, mock_cache):
+    app = application.create_app(container)
     return app
 
 

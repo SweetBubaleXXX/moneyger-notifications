@@ -4,7 +4,7 @@ import jwt
 import pytest
 from flask.testing import FlaskClient
 
-from app.models import User, JwtTokenPayload
+from app.models import JwtTokenPayload, User
 
 
 @pytest.fixture

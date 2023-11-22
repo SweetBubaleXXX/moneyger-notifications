@@ -1,7 +1,7 @@
 from typing import Any, AnyStr, Callable
 
 import jwt
-from dependency_injector.wiring import Provide
+from dependency_injector.wiring import Provide, inject
 from flask import Request, Response
 from flask_http_middleware import BaseHTTPMiddleware
 from py_auth_header_parser import parse_auth_header
@@ -15,11 +15,15 @@ from ..services import users
 
 
 class JwtAuthMiddleware(BaseHTTPMiddleware):
-    users_service: users.UsersService = Provide[Container.users_service]
     www_authenticate = WWWAuthenticate("Bearer", {"realm": "api"})
 
-    def __init__(self) -> None:
+    @inject
+    def __init__(
+        self,
+        users_service: users.UsersService = Provide[Container.users_service],
+    ) -> None:
         super().__init__()
+        self.users_service = users_service
 
     def dispatch(self, request: Request, call_next: Callable[..., Any]) -> Response:
         auth_header = request.headers.get("authorization")

@@ -17,10 +17,12 @@ def create_container(testing: bool = False) -> Container:
     return container
 
 
-def create_app(testing: bool = False) -> Flask:
+def create_app(container: Container | None = None) -> Flask:
     app = Flask(__name__)
-    app.testing = testing
-    app.container = create_container(testing)
+    if not container:
+        container = create_container()
+    app.testing = container.config.testing()
+    app.container = container
     app.wsgi_app = ProxyFix(app.wsgi_app)
     app.wsgi_app = MiddlewareManager(app)
     app.wsgi_app.add_middleware(auth.JwtAuthMiddleware)

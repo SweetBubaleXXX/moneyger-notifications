@@ -6,6 +6,7 @@ class Settings(BaseSettings):
     database_url: MongoDsn | None
     database_user: str | None
     database_password: str | None
+    default_database: str = "default_db"
     cache_url: RedisDsn | None
     message_storage_max_size: int = 100
 
