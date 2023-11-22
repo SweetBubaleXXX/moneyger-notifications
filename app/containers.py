@@ -1,7 +1,9 @@
+import pika
 import redis
 from dependency_injector import containers, providers
 from pymongo import MongoClient
 
+from .services.consumers import UserCreatedQueue
 from .services.messages import RedisMessageStorage
 from .services.users import UsersService
 
@@ -33,4 +35,14 @@ class Container(containers.DeclarativeContainer):
         RedisMessageStorage,
         cache,
         config.message_storage_max_size,
+    )
+    mq_params = providers.Singleton(pika.ConnectionParameters, config.mq_url)
+    mq_connection = providers.Singleton(pika.BlockingConnection, mq_params)
+    user_created_consumer = providers.Factory(
+        UserCreatedQueue,
+        mq_connection,
+        config.mq_user_created_queue,
+        config.mq_users_exchange,
+        config.mq_user_created_queue_bindings,
+        users_service,
     )
