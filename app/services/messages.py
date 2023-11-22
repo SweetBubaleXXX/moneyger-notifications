@@ -11,9 +11,7 @@ T = TypeVar("T")
 
 
 class MessageStorage(Collection, Generic[T], metaclass=ABCMeta):
-    storage_size_limit: int | None
-
-    def __init__(self, storage: T, storage_size_limit: int | None = None) -> None:
+    def __init__(self, storage: T, storage_size_limit: int) -> None:
         self.storage_size_limit = storage_size_limit
         self._storage = storage
         self._storage_exhausted_listeners: set[Callable[[Self], Any]] = set()
@@ -55,7 +53,7 @@ class RedisMessageStorage(MessageStorage[Redis]):
     _LOCK_TIMEOUT = 120
     _BLOCKING_TIMEOUT = 60
 
-    def __init__(self, storage: Redis, storage_size_limit: int | None = None) -> None:
+    def __init__(self, storage: Redis, storage_size_limit: int) -> None:
         super().__init__(storage, storage_size_limit)
         self._lock = Lock(
             self._storage,
