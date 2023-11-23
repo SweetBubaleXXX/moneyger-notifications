@@ -42,16 +42,12 @@ class Container(containers.DeclarativeContainer):
     user_created_consumer = providers.Factory(
         UserCreatedConsumer,
         mq_connection,
-        config.mq_users_exchange,
         config.mq_user_created_queue,
-        config.mq_user_created_queue_bindings,
         users_service,
     )
     user_credentials_rpc = providers.Factory(
         UserCredentialsRpc,
         mq_connection,
-        config.mq_users_exchange,
         config.mq_user_credentials_rpc_queue,
-        config.mq_user_credentials_rpc_queue_bindings,
         users_service,
     )

@@ -1,10 +1,9 @@
-from typing import Iterable
-
 import pika
 from pika.channel import Channel
 from pika.spec import Basic
 from pydantic import ValidationError
 
+from ..config import QueueConfig
 from ..models import User
 from ..services import users
 from .base import Consumer
@@ -14,12 +13,10 @@ class UserCreatedConsumer(Consumer):
     def __init__(
         self,
         connection: pika.BaseConnection,
-        exchange_name: str,
-        queue_name: str,
-        binding_keys: Iterable[str],
+        queue: QueueConfig,
         users_service: users.UsersService,
     ) -> None:
-        super().__init__(connection, exchange_name, queue_name, binding_keys)
+        super().__init__(connection, queue)
         self.users_service = users_service
 
     def callback(

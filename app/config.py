@@ -1,4 +1,34 @@
-from pydantic import AmqpDsn, BaseSettings, MongoDsn, RedisDsn, root_validator
+from typing import Iterable
+
+from pydantic import (
+    AmqpDsn,
+    BaseModel,
+    BaseSettings,
+    MongoDsn,
+    RedisDsn,
+    root_validator,
+)
+
+
+class QueueConfig(BaseModel):
+    exchange: str
+    name: str
+    bindings: Iterable[str]
+
+
+class UserCreatedQueueConfig(QueueConfig):
+    name: str = "subscribe_user_to_notifications_queue"
+    bindings: Iterable[str] = ["user.event.created"]
+
+
+class UserDeletedQueueConfig(QueueConfig):
+    name: str = "unsubscribe_user_queue"
+    bindings: Iterable[str] = ["user.event.deleted"]
+
+
+class UserCredentialsRpcQueue(QueueConfig):
+    name: str = "request_user_credentials_queue"
+    bindings: Iterable[str] = ["user.request.credentials"]
 
 
 class Settings(BaseSettings):
@@ -13,10 +43,15 @@ class Settings(BaseSettings):
 
     mq_url: AmqpDsn | None
     mq_users_exchange: str = "users_exchange"
-    mq_user_created_queue: str = "subscribe_user_to_notifications_queue"
-    mq_user_created_queue_bindings: list[str] = ["user.event.created"]
-    mq_user_credentials_rpc_queue: str = "request_user_credentials_queue"
-    mq_user_credentials_rpc_queue_bindings: list[str] = ["user.request.credentials"]
+    mq_user_created_queue: QueueConfig = UserCreatedQueueConfig(
+        exchange=mq_users_exchange
+    )
+    mq_user_deleted_queue: QueueConfig = UserDeletedQueueConfig(
+        exchange=mq_users_exchange
+    )
+    mq_user_credentials_rpc_queue: QueueConfig = UserCredentialsRpcQueue(
+        exchange=mq_users_exchange
+    )
 
     message_storage_max_size: int = 100
 
@@ -31,3 +66,4 @@ class Settings(BaseSettings):
 
     class Config:
         env_file = ".env"
+        env_nested_delimiter = "_"
