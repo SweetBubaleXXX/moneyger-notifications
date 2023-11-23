@@ -8,10 +8,10 @@ services:
       MONGO_INITDB_ROOT_USERNAME: ${DATABASE_USER:?}
       MONGO_INITDB_ROOT_PASSWORD: ${DATABASE_PASSWORD:?}
       MONGODB_DATA_DIR: /data/db
-    expose:
-      - 27017
     volumes:
       - database_data:/data/db
+    expose:
+      - 27017
 
   redis:
     image: redis:7-alpine
@@ -20,5 +20,20 @@ services:
     expose:
       - 6379
 
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    hostname: rabbitmq
+    restart: unless-stopped
+    environment:
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ_USER:?}
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_PASSWORD:?}
+      - RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS=-rabbit disk_free_limit 536870912
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    expose:
+      - 5672
+      - 15672
+
 volumes:
   database_data:
+  rabbitmq_data:
