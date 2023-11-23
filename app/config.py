@@ -31,6 +31,11 @@ class UserCredentialsRpcQueue(QueueConfig):
     bindings: Iterable[str] = ["user.request.credentials"]
 
 
+class MessageSentQueueConfig(QueueConfig):
+    name: str = "new_messages_queue"
+    bindings: Iterable[str] = ["message.event.sent"]
+
+
 class Settings(BaseSettings):
     testing: bool = False
 
@@ -43,6 +48,7 @@ class Settings(BaseSettings):
 
     mq_url: AmqpDsn | None
     mq_users_exchange: str = "users_exchange"
+    mq_messages_exchange: str = "messages_exchange"
     mq_user_created_queue: QueueConfig = UserCreatedQueueConfig(
         exchange=mq_users_exchange
     )
@@ -51,6 +57,9 @@ class Settings(BaseSettings):
     )
     mq_user_credentials_rpc_queue: QueueConfig = UserCredentialsRpcQueue(
         exchange=mq_users_exchange
+    )
+    mq_message_sent_queue: QueueConfig = MessageSentQueueConfig(
+        exchange=mq_messages_exchange
     )
 
     message_storage_max_size: int = 100
