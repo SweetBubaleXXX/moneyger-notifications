@@ -14,12 +14,12 @@ class UserCreatedConsumer(Consumer):
     def __init__(
         self,
         connection: pika.BaseConnection,
-        queue_name: str,
         exchange_name: str,
+        queue_name: str,
         binding_keys: Iterable[str],
         users_service: users.UsersService,
     ) -> None:
-        super().__init__(connection, queue_name, exchange_name, binding_keys)
+        super().__init__(connection, exchange_name, queue_name, binding_keys)
         self.users_service = users_service
 
     def callback(

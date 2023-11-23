@@ -12,12 +12,11 @@ class Settings(BaseSettings):
     cache_url: RedisDsn | None
 
     mq_url: AmqpDsn | None
+    mq_users_exchange: str = "users_exchange"
     mq_user_created_queue: str = "subscribe_user_to_notifications_queue"
     mq_user_created_queue_bindings: list[str] = ["user.event.created"]
-    mq_users_exchange: str = "users_exchange"
     mq_user_credentials_rpc_queue: str = "request_user_credentials_queue"
     mq_user_credentials_rpc_queue_bindings: list[str] = ["user.request.credentials"]
-    mq_rpc_response_exchange: str = "rpc_response_exchange"
 
     message_storage_max_size: int = 100
 

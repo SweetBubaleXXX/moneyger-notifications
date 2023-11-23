@@ -10,8 +10,8 @@ class Consumer(metaclass=ABCMeta):
     def __init__(
         self,
         connection: pika.BaseConnection,
-        queue_name: str,
         exchange_name: str,
+        queue_name: str,
         binding_keys: Iterable[str],
     ) -> None:
         self.connection = connection
