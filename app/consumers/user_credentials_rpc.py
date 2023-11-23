@@ -1,10 +1,11 @@
-from typing import AnyStr, Iterable
+from typing import Iterable
 
 import pika
 from pika.channel import Channel
 from pika.spec import Basic
 
 from ..services import users
+from ..models import UserCredentialsResponse
 from .base import Consumer
 
 
@@ -36,19 +37,26 @@ class UserCredentialsRpc(Consumer):
         try:
             user = self.users_service.get_user_by_id(account_id)
         except users.NotFound:
-            return channel.basic_reject(method.delivery_tag, requeue=False)
-        self._send_response(user.credentials.json(), channel, properties)
-        channel.basic_ack(method.delivery_tag)
+            return self._send_response(
+                UserCredentialsResponse(success=False),
+                channel,
+                method,
+                properties,
+            )
+        response = UserCredentialsResponse(success=True, result=user.credentials)
+        self._send_response(response, channel, method, properties)
 
     def _send_response(
         self,
-        response: AnyStr,
+        response: UserCredentialsResponse,
         channel: Channel,
+        method: Basic.Deliver,
         properties: pika.BasicProperties,
     ) -> None:
         channel.basic_publish(
             exchange=self.response_exchange,
             routing_key=properties.reply_to,
             properties=pika.BasicProperties(correlation_id=properties.correlation_id),
-            body=response,
+            body=response.json(),
         )
+        channel.basic_ack(method.delivery_tag)

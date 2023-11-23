@@ -40,6 +40,11 @@ class JwtTokenPayload(BaseModel):
     account_id: int
 
 
+class UserCredentialsResponse(BaseModel):
+    success: bool
+    result: UserCredentials | None
+
+
 class Message(BaseModel):
     id: str
     sender: str
