@@ -17,8 +17,11 @@ services:
       DATABASE_PASSWORD: ${DATABASE_PASSWORD:?}
       CACHE_URL: redis://:${REDIS_PASSWORD:?}@redis:6379/0
       MQ_URL: amqp://${RABBITMQ_USER:?}:${RABBITMQ_PASSWORD:?}@rabbitmq:5672/%2F
-    ports:
-      - "${PORT:-80}:80"
+
+  mq_consumer:
+    extends:
+      service: server
+    command: python ./start_consumers.py
 
   db:
     image: mongo:7

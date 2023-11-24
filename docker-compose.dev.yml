@@ -9,9 +9,17 @@ services:
       context: .
       dockerfile: Dockerfile.dev
     command: poetry run flask --app app.application run -h 0.0.0.0 -p 80
+    restart: "no"
     volumes:
       - ./:/app:ro
-    restart: "no"
+    ports:
+      - "${PORT:-80}:80"
+
+  mq_consumer:
+    extends:
+      service: server
+    command: poetry run python ./start_consumers.py
+    ports: []
 
   db:
     extends:
