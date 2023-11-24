@@ -1,6 +1,0 @@
-version: "3.8"
-
-services:
-  flask:
-    ports:
-      - "${PORT:-80}:80"

@@ -1,6 +1,18 @@
 version: "3.8"
 
 services:
+  server:
+    extends:
+      file: docker-compose.yml
+      service: server
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    command: poetry run flask --app app.application run -h 0.0.0.0 -p 80
+    volumes:
+      - ./:/app:ro
+    restart: "no"
+
   db:
     extends:
       file: docker-compose.yml
