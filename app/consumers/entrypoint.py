@@ -1,9 +1,9 @@
 import multiprocessing
 
-from dependency_injector.wiring import inject, Provide
+from dependency_injector.wiring import Provide, inject
 
 from ..containers import Container
-from .base import Consumer, BlockingConsumerRunner
+from .base import BlockingConsumerRunner, Consumer
 
 
 @inject

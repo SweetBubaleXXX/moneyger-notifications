@@ -3,6 +3,7 @@ import redis
 from dependency_injector import containers, providers
 from pymongo import MongoClient
 
+from .config import QueueConfig
 from .consumers.message_sent import MessageSentConsumer
 from .consumers.user_created import UserCreatedConsumer
 from .consumers.user_credentials_rpc import UserCredentialsRpc
@@ -41,30 +42,31 @@ class Container(containers.DeclarativeContainer):
         cache,
         config.message_storage_max_size,
     )
-    mq_params = providers.Singleton(pika.ConnectionParameters, config.mq_url)
+    mq_params = providers.Singleton(pika.URLParameters, config.mq_url)
     mq_connection = providers.Factory(pika.BlockingConnection, mq_params)
+    queue_config = providers.Object(lambda config: QueueConfig.construct(**config))
     user_created_consumer = providers.Factory(
         UserCreatedConsumer,
         mq_connection,
-        config.mq_user_created_queue,
+        queue_config.provided.call(config.mq_user_created_queue),
         users_service,
     )
     user_deleted_consumer = providers.Factory(
         UserDeletedConsumer,
         mq_connection,
-        config.mq_user_deleted_queue,
+        queue_config.provided.call(config.mq_user_deleted_queue),
         users_service,
     )
     user_credentials_rpc = providers.Factory(
         UserCredentialsRpc,
         mq_connection,
-        config.mq_user_credentials_rpc_queue,
+        queue_config.provided.call(config.mq_user_credentials_rpc_queue),
         users_service,
     )
     message_sent_consumer = providers.Factory(
         MessageSentConsumer,
         mq_connection,
-        config.mq_message_sent_consumer,
+        queue_config.provided.call(config.mq_message_sent_queue),
         message_storage,
     )
     consumers = providers.List(
