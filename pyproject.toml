@@ -38,6 +38,13 @@ mypy = "^1.7.0"
 flake8 = "^6.1.0"
 black = "^23.11.0"
 
+
+[tool.poetry.group.prod]
+optional = true
+
+[tool.poetry.group.prod.dependencies]
+gunicorn = "^21.2.0"
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
