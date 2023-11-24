@@ -1,6 +1,7 @@
 from abc import ABCMeta, abstractmethod
 
 import pika
+from pika.adapters.blocking_connection import BlockingChannel
 from pika.channel import Channel
 from pika.spec import Basic
 
@@ -25,3 +26,18 @@ class Consumer(metaclass=ABCMeta):
         body: bytes,
     ) -> None:
         ...
+
+
+class BlockingConsumerRunner:
+    def __init__(self, consumer: Consumer) -> None:
+        if not isinstance(consumer.channel, BlockingChannel):
+            raise TypeError("Consumer doesn't support blocking connection")
+        self.connection = consumer.connection
+        self.channel = consumer.channel
+
+    def __call__(self) -> None:
+        try:
+            self.channel.start_consuming()
+        except KeyboardInterrupt:
+            self.channel.stop_consuming()
+        self.connection.close()

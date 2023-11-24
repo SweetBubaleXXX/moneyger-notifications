@@ -14,11 +14,13 @@ from .services.users import UsersService
 class Container(containers.DeclarativeContainer):
     wiring_config = containers.WiringConfiguration(
         packages=[
-            ".services",
+            ".consumers",
             ".middleware",
             ".resources",
+            ".services",
         ],
     )
+    __self__ = providers.Self()
 
     config = providers.Configuration()
     db_client = providers.Singleton(
@@ -40,7 +42,7 @@ class Container(containers.DeclarativeContainer):
         config.message_storage_max_size,
     )
     mq_params = providers.Singleton(pika.ConnectionParameters, config.mq_url)
-    mq_connection = providers.Singleton(pika.BlockingConnection, mq_params)
+    mq_connection = providers.Factory(pika.BlockingConnection, mq_params)
     user_created_consumer = providers.Factory(
         UserCreatedConsumer,
         mq_connection,
@@ -64,4 +66,10 @@ class Container(containers.DeclarativeContainer):
         mq_connection,
         config.mq_message_sent_consumer,
         message_storage,
+    )
+    consumers = providers.List(
+        user_created_consumer,
+        user_deleted_consumer,
+        user_credentials_rpc,
+        message_sent_consumer,
     )
