@@ -17,9 +17,15 @@ services:
 
   mq_consumer:
     extends:
-      service: server
+      file: docker-compose.yml
+      service: mq_consumer
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
     command: poetry run python ./start_consumers.py
-    ports: []
+    restart: "no"
+    volumes:
+      - ./:/app:ro
 
   db:
     extends:
