@@ -1,3 +1,4 @@
+import logging
 from abc import ABCMeta, abstractmethod
 
 import pika
@@ -36,8 +37,11 @@ class BlockingConsumerRunner:
         self.channel = consumer.channel
 
     def __call__(self) -> None:
+        logging.info("Runner started")
         try:
             self.channel.start_consuming()
-        except KeyboardInterrupt:
+        except Exception as exc:
+            logging.exception(exc)
+        finally:
             self.channel.stop_consuming()
-        self.connection.close()
+            self.connection.close()
