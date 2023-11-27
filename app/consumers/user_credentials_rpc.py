@@ -27,17 +27,19 @@ class UserCredentialsRpc(Consumer):
     ) -> None:
         try:
             account_id = int(body)
-        except ValueError:
-            return channel.basic_reject(method.delivery_tag, requeue=False)
+        except ValueError as exc:
+            channel.basic_reject(method.delivery_tag, requeue=False)
+            raise exc
         try:
             user = self.users_service.get_user_by_id(account_id)
-        except users.NotFound:
-            return self._send_response(
+        except users.NotFound as exc:
+            self._send_response(
                 UserCredentialsResponse(success=False),
                 channel,
                 method,
                 properties,
             )
+            raise exc
         response = UserCredentialsResponse(success=True, result=user.credentials)
         self._send_response(response, channel, method, properties)
 

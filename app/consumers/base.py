@@ -16,7 +16,7 @@ class Consumer(metaclass=ABCMeta):
         self.channel.queue_declare(queue.name, durable=True)
         for routing_key in queue.bindings:
             self.channel.queue_bind(queue.name, queue.exchange, routing_key)
-        self.channel.basic_consume(queue.name, self.callback)
+        self.channel.basic_consume(queue.name, self.__callback)
 
     @abstractmethod
     def callback(
@@ -27,6 +27,19 @@ class Consumer(metaclass=ABCMeta):
         body: bytes,
     ) -> None:
         ...
+
+    def __callback(
+        self,
+        channel: Channel,
+        method: Basic.Deliver,
+        properties: pika.BasicProperties,
+        body: bytes,
+    ):
+        logging.info("Message with length of %d arrived" % len(body))
+        try:
+            self.callback(channel, method, properties, body)
+        except Exception as exc:
+            logging.exception(exc)
 
 
 class BlockingConsumerRunner:
@@ -43,5 +56,5 @@ class BlockingConsumerRunner:
         except Exception as exc:
             logging.exception(exc)
         finally:
+            logging.info("Closing channel")
             self.channel.stop_consuming()
-            self.connection.close()

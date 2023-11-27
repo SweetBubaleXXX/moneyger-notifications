@@ -26,10 +26,8 @@ class UserDeletedConsumer(Consumer):
     ) -> None:
         try:
             account_id = int(body)
-        except ValueError:
-            return channel.basic_reject(method.delivery_tag, requeue=False)
-        try:
-            self.users_service.delete_user(account_id)
-        except users.NotFound:
-            pass
+        except ValueError as exc:
+            channel.basic_reject(method.delivery_tag, requeue=False)
+            raise exc
+        self.users_service.delete_user(account_id)
         channel.basic_ack(method.delivery_tag)

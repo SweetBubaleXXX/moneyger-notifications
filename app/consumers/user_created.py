@@ -29,6 +29,7 @@ class UserCreatedConsumer(Consumer):
         try:
             user = User.parse_raw(body)
             self.users_service.create_user(user)
-        except (ValidationError, users.AlreadyExists):
-            return channel.basic_reject(method.delivery_tag, requeue=False)
+        except (ValidationError, users.AlreadyExists) as exc:
+            channel.basic_reject(method.delivery_tag, requeue=False)
+            raise exc
         channel.basic_ack(method.delivery_tag)

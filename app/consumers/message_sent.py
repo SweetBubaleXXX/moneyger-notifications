@@ -28,7 +28,8 @@ class MessageSentConsumer(Consumer):
     ) -> None:
         try:
             message = Message.parse_raw(body)
-        except ValidationError:
-            return channel.basic_reject(method.delivery_tag, requeue=False)
+        except ValidationError as exc:
+            channel.basic_reject(method.delivery_tag, requeue=False)
+            raise exc
         self.message_storage.push(message)
         channel.basic_ack(method.delivery_tag)
