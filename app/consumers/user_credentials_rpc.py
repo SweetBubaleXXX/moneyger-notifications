@@ -18,7 +18,7 @@ class UserCredentialsRpc(Consumer):
         super().__init__(connection, queue)
         self.users_service = users_service
 
-    def callback(
+    def on_message_arrived(
         self,
         channel: Channel,
         method: Basic.Deliver,
@@ -27,19 +27,18 @@ class UserCredentialsRpc(Consumer):
     ) -> None:
         try:
             account_id = int(body)
-        except ValueError as exc:
+        except ValueError:
             channel.basic_reject(method.delivery_tag, requeue=False)
-            raise exc
         try:
             user = self.users_service.get_user_by_id(account_id)
-        except users.NotFound as exc:
+        except users.NotFound:
             self._send_response(
                 UserCredentialsResponse(success=False),
                 channel,
                 method,
                 properties,
             )
-            raise exc
+            raise
         response = UserCredentialsResponse(success=True, result=user.credentials)
         self._send_response(response, channel, method, properties)
 

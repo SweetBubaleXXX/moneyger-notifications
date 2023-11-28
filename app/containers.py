@@ -1,6 +1,7 @@
 import pika
 import redis
 from dependency_injector import containers, providers
+from dependency_injector.providers import Factory
 from pymongo import MongoClient
 
 from .config import QueueConfig
@@ -8,6 +9,7 @@ from .consumers.message_sent import MessageSentConsumer
 from .consumers.user_created import UserCreatedConsumer
 from .consumers.user_credentials_rpc import UserCredentialsRpc
 from .consumers.user_deleted import UserDeletedConsumer
+from .consumers.base import Consumer
 from .services.messages import RedisMessageStorage
 from .services.users import UsersService
 
@@ -69,9 +71,9 @@ class Container(containers.DeclarativeContainer):
         queue_config.provided.call(config.mq_message_sent_queue),
         message_storage,
     )
-    consumers = providers.List(
-        user_created_consumer,
-        user_deleted_consumer,
-        user_credentials_rpc,
-        message_sent_consumer,
+    consumers: list[Factory[Consumer]] = providers.List(
+        user_created_consumer.provider,
+        user_deleted_consumer.provider,
+        user_credentials_rpc.provider,
+        message_sent_consumer.provider,
     )

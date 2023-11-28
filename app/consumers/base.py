@@ -1,10 +1,12 @@
 import logging
 from abc import ABCMeta, abstractmethod
+from typing import Callable
 
 import pika
 from pika.adapters.blocking_connection import BlockingChannel
 from pika.channel import Channel
 from pika.spec import Basic
+from retry import retry
 
 from ..config import QueueConfig
 
@@ -19,7 +21,7 @@ class Consumer(metaclass=ABCMeta):
         self.channel.basic_consume(queue.name, self.__callback)
 
     @abstractmethod
-    def callback(
+    def on_message_arrived(
         self,
         channel: Channel,
         method: Basic.Deliver,
@@ -37,24 +39,31 @@ class Consumer(metaclass=ABCMeta):
     ):
         logging.info("Message with length of %d arrived" % len(body))
         try:
-            self.callback(channel, method, properties, body)
+            self.on_message_arrived(channel, method, properties, body)
         except Exception as exc:
-            logging.exception(exc)
+            logging.error(exc)
+
+
+class StoppedConsuming(Exception):
+    pass
 
 
 class BlockingConsumerRunner:
-    def __init__(self, consumer: Consumer) -> None:
+    def __init__(self, get_consumer: Callable[..., Consumer]) -> None:
+        self._get_consumer = get_consumer
+
+    @retry(delay=3)
+    def __call__(self) -> None:
+        consumer = self._get_consumer()
         if not isinstance(consumer.channel, BlockingChannel):
             raise TypeError("Consumer doesn't support blocking connection")
-        self.connection = consumer.connection
-        self.channel = consumer.channel
-
-    def __call__(self) -> None:
         logging.info("Runner started")
         try:
-            self.channel.start_consuming()
+            consumer.channel.start_consuming()
+            logging.info("Stopping consuming")
+            consumer.channel.stop_consuming()
+            consumer.connection.close()
         except Exception as exc:
-            logging.exception(exc)
+            logging.error(exc)
         finally:
-            logging.info("Closing channel")
-            self.channel.stop_consuming()
+            raise StoppedConsuming("Stopped consuming")

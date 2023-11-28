@@ -6,11 +6,11 @@ from pymongo.database import Database
 from ..models import User
 
 
-class AlreadyExists(BaseException):
+class AlreadyExists(Exception):
     pass
 
 
-class NotFound(BaseException):
+class NotFound(Exception):
     pass
 
 
@@ -31,7 +31,7 @@ class UsersService:
     def create_user(self, user: User) -> User:
         existing_user = self.collection.find_one({"account_id": user.account_id})
         if existing_user:
-            raise AlreadyExists()
+            raise AlreadyExists(f"Account with id({user.account_id}) already exists")
         self.collection.insert_one(user.dict())
         return user
 
@@ -46,9 +46,9 @@ class UsersService:
     def delete_user(self, account_id: int) -> None:
         delete_result = self.collection.delete_one({"account_id": account_id})
         if not delete_result.deleted_count:
-            raise NotFound()
+            raise NotFound(f"Account with id({account_id}) not found")
 
     def _return_user_or_error(self, user: Mapping | None) -> User:
         if not user:
-            raise NotFound()
+            raise NotFound("User not found")
         return User(**user)

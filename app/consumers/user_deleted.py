@@ -17,7 +17,7 @@ class UserDeletedConsumer(Consumer):
         super().__init__(connection, queue)
         self.users_service = users_service
 
-    def callback(
+    def on_message_arrived(
         self,
         channel: Channel,
         method: Basic.Deliver,
@@ -26,8 +26,12 @@ class UserDeletedConsumer(Consumer):
     ) -> None:
         try:
             account_id = int(body)
-        except ValueError as exc:
+        except ValueError:
             channel.basic_reject(method.delivery_tag, requeue=False)
-            raise exc
-        self.users_service.delete_user(account_id)
+            raise
+        try:
+            self.users_service.delete_user(account_id)
+        except users.NotFound:
+            channel.basic_reject(method.delivery_tag, requeue=False)
+            raise
         channel.basic_ack(method.delivery_tag)

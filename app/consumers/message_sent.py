@@ -19,7 +19,7 @@ class MessageSentConsumer(Consumer):
         super().__init__(connection, queue)
         self.message_storage = message_storage
 
-    def callback(
+    def on_message_arrived(
         self,
         channel: Channel,
         method: Basic.Deliver,
@@ -28,8 +28,8 @@ class MessageSentConsumer(Consumer):
     ) -> None:
         try:
             message = Message.parse_raw(body)
-        except ValidationError as exc:
+        except ValidationError:
             channel.basic_reject(method.delivery_tag, requeue=False)
-            raise exc
+            raise
         self.message_storage.push(message)
         channel.basic_ack(method.delivery_tag)

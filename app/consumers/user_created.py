@@ -19,7 +19,7 @@ class UserCreatedConsumer(Consumer):
         super().__init__(connection, queue)
         self.users_service = users_service
 
-    def callback(
+    def on_message_arrived(
         self,
         channel: Channel,
         method: Basic.Deliver,
@@ -29,7 +29,7 @@ class UserCreatedConsumer(Consumer):
         try:
             user = User.parse_raw(body)
             self.users_service.create_user(user)
-        except (ValidationError, users.AlreadyExists) as exc:
+        except (ValidationError, users.AlreadyExists):
             channel.basic_reject(method.delivery_tag, requeue=False)
-            raise exc
+            raise
         channel.basic_ack(method.delivery_tag)
