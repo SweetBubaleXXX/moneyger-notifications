@@ -19,7 +19,7 @@ class MessageSentConsumer(Consumer):
         super().__init__(connection, queue)
         self.message_storage = message_storage
 
-    def on_message_arrived(
+    def process_message(
         self,
         channel: Channel,
         method: Basic.Deliver,

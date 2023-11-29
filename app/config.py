@@ -1,4 +1,4 @@
-from typing import Iterable
+from typing import Iterable, Literal
 
 from pydantic import (
     AmqpDsn,
@@ -38,6 +38,7 @@ class MessageSentQueueConfig(QueueConfig):
 
 class Settings(BaseSettings):
     testing: bool = False
+    log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"] = "INFO"
 
     database_url: MongoDsn | None
     database_user: str | None

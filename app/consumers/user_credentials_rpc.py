@@ -18,7 +18,7 @@ class UserCredentialsRpc(Consumer):
         super().__init__(connection, queue)
         self.users_service = users_service
 
-    def on_message_arrived(
+    def process_message(
         self,
         channel: Channel,
         method: Basic.Deliver,
@@ -29,6 +29,7 @@ class UserCredentialsRpc(Consumer):
             account_id = int(body)
         except ValueError:
             channel.basic_reject(method.delivery_tag, requeue=False)
+            raise
         try:
             user = self.users_service.get_user_by_id(account_id)
         except users.NotFound:

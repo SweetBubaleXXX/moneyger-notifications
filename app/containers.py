@@ -1,15 +1,15 @@
 import pika
 import redis
 from dependency_injector import containers, providers
-from dependency_injector.providers import Factory
 from pymongo import MongoClient
 
 from .config import QueueConfig
+from .consumers.base import ConsumerExecutor
+from .consumers.executors import BlockingConsumerExecutor
 from .consumers.message_sent import MessageSentConsumer
 from .consumers.user_created import UserCreatedConsumer
 from .consumers.user_credentials_rpc import UserCredentialsRpc
 from .consumers.user_deleted import UserDeletedConsumer
-from .consumers.base import Consumer
 from .services.messages import RedisMessageStorage
 from .services.users import UsersService
 
@@ -37,13 +37,17 @@ class Container(containers.DeclarativeContainer):
         db_client,
         config.default_database,
     )
+
     cache = providers.Singleton(redis.from_url, config.cache_url)
+
     users_service = providers.Factory(UsersService, db)
+
     message_storage = providers.Factory(
         RedisMessageStorage,
         cache,
         config.message_storage_max_size,
     )
+
     mq_params = providers.Singleton(pika.URLParameters, config.mq_url)
     mq_connection = providers.Factory(pika.BlockingConnection, mq_params)
     queue_config = providers.Object(lambda config: QueueConfig.construct(**config))
@@ -71,9 +75,9 @@ class Container(containers.DeclarativeContainer):
         queue_config.provided.call(config.mq_message_sent_queue),
         message_storage,
     )
-    consumers: list[Factory[Consumer]] = providers.List(
-        user_created_consumer.provider,
-        user_deleted_consumer.provider,
-        user_credentials_rpc.provider,
-        message_sent_consumer.provider,
+    consumer_executors: list[ConsumerExecutor] = providers.List(
+        providers.Factory(BlockingConsumerExecutor, user_created_consumer.provider),
+        providers.Factory(BlockingConsumerExecutor, user_deleted_consumer.provider),
+        providers.Factory(BlockingConsumerExecutor, user_credentials_rpc.provider),
+        providers.Factory(BlockingConsumerExecutor, message_sent_consumer.provider),
     )

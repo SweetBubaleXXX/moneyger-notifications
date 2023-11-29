@@ -19,7 +19,7 @@ class UserCreatedConsumer(Consumer):
         super().__init__(connection, queue)
         self.users_service = users_service
 
-    def on_message_arrived(
+    def process_message(
         self,
         channel: Channel,
         method: Basic.Deliver,
