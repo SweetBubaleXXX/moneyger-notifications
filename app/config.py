@@ -65,11 +65,10 @@ class Settings(BaseSettings):
 
     message_storage_max_size: int = 100
 
-    mail_url: str | None
+    mail_host: str | None
+    mail_port: int | None
     mail_user: str | None
     mail_password: str | None
-    mail_starttls: bool = False
-    mail_ssl_tls: bool = False
 
     @root_validator
     def check_production_required_settings(cls, values):

@@ -1174,6 +1174,25 @@ hiredis = ["hiredis (>=1.0.0)"]
 ocsp = ["cryptography (>=36.0.1)", "pyopenssl (==20.0.1)", "requests (>=2.26.0)"]
 
 [[package]]
+name = "redmail"
+version = "0.6.0"
+description = "Email sending library"
+optional = false
+python-versions = ">=3.6"
+files = [
+    {file = "redmail-0.6.0-py3-none-any.whl", hash = "sha256:8e64a680ffc8aaf8054312bf8b216da8fed20669181b77b1f1ccbdf4ee064427"},
+    {file = "redmail-0.6.0.tar.gz", hash = "sha256:0447cbd76deb2788b2d831c12e22b513587e99f725071d9951a01b0f2b8d0a72"},
+]
+
+[package.dependencies]
+jinja2 = "*"
+
+[package.extras]
+docs = ["pydata-sphinx-theme", "sphinx (>=1.7.5)", "sphinx-book-theme", "sphinx-copybutton", "sphinx-material"]
+style = ["css-inline"]
+test = ["Pillow", "css-inline", "jinja2", "matplotlib", "openpyxl", "pandas", "pytest"]
+
+[[package]]
 name = "retry"
 version = "0.9.2"
 description = "Easy to use retry decorator."
@@ -1251,4 +1270,4 @@ watchdog = ["watchdog (>=2.3)"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "a64159435f3fa05f2aa89ad46f13f3a135728a3d371c926ab1e6d6f6599c027a"
+content-hash = "7860742732bb746a74f0717a38389036ac9d8a872717f7233b6f09aa24d1d66b"

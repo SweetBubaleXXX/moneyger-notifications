@@ -1,7 +1,9 @@
 import pika
 import redis
+import jinja2
 from dependency_injector import containers, providers
 from pymongo import MongoClient
+from redmail import EmailSender
 
 from .config import QueueConfig
 from .consumers.base import ConsumerExecutor
@@ -10,7 +12,6 @@ from .consumers.message_sent import MessageSentConsumer
 from .consumers.user_created import UserCreatedConsumer
 from .consumers.user_credentials_rpc import UserCredentialsRpc
 from .consumers.user_deleted import UserDeletedConsumer
-from .services.email import create_smtp_connection
 from .services.messages import RedisMessageStorage
 from .services.users import UsersService
 
@@ -49,13 +50,19 @@ class Container(containers.DeclarativeContainer):
         config.message_storage_max_size,
     )
 
-    smtp_connection = providers.Factory(
-        create_smtp_connection,
-        config.mail_url,
+    jinja_environment = jinja2.Environment(
+        loader=jinja2.FileSystemLoader("app/templates")
+    )
+    email_service = providers.Factory(
+        EmailSender,
+        config.mail_host,
+        config.mail_port,
         config.mail_user,
         config.mail_password,
-        config.mail_starttls,
-        config.mail_ssl_tls,
+    )
+    email_service.add_attributes(
+        templates_html=jinja_environment,
+        templates_text=jinja_environment,
     )
 
     mq_params = providers.Singleton(pika.URLParameters, config.mq_url)
