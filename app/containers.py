@@ -10,6 +10,7 @@ from .consumers.message_sent import MessageSentConsumer
 from .consumers.user_created import UserCreatedConsumer
 from .consumers.user_credentials_rpc import UserCredentialsRpc
 from .consumers.user_deleted import UserDeletedConsumer
+from .services.email import create_smtp_connection
 from .services.messages import RedisMessageStorage
 from .services.users import UsersService
 
@@ -46,6 +47,15 @@ class Container(containers.DeclarativeContainer):
         RedisMessageStorage,
         cache,
         config.message_storage_max_size,
+    )
+
+    smtp_connection = providers.Factory(
+        create_smtp_connection,
+        config.mail_url,
+        config.mail_user,
+        config.mail_password,
+        config.mail_starttls,
+        config.mail_ssl_tls,
     )
 
     mq_params = providers.Singleton(pika.URLParameters, config.mq_url)
