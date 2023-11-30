@@ -29,7 +29,7 @@ class Consumer(metaclass=ABCMeta):
         try:
             self.process_message(channel, method, properties, body)
         except Exception as exc:
-            logging.error(exc)
+            logging.error("%s - %s", type(exc).__name__, exc)
 
     @abstractmethod
     def process_message(

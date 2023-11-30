@@ -22,7 +22,7 @@ class BlockingConsumerExecutor:
         try:
             consumer.channel.start_consuming()
         except Exception as exc:
-            logging.error(exc)
+            logging.exception(exc)
         finally:
             consumer.channel.stop_consuming()
             consumer.connection.close()
