@@ -18,9 +18,11 @@ class EmailService:
         message_storage.add_storage_exhausted_listener(self.notify_recent_messages)
 
     def notify_recent_messages(self, message_storage: MessageStorage) -> None:
-        recipients = map(
-            attrgetter("email"),
-            self.users_service.filter_users({"subscribed_to_chat": True}),
+        recipients = list(
+            map(
+                attrgetter("email"),
+                self.users_service.filter_users({"subscribed_to_chat": True}),
+            )
         )
         recent_messages = message_storage.get_all()
         self.connection.send(
