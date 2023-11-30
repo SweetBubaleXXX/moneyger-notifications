@@ -35,11 +35,11 @@ def mock_cache(container: Container):
 
 
 @pytest.fixture(autouse=True)
-def mock_email_service(container: Container):
+def mock_email_connection(container: Container):
     email_service_mock = MagicMock(spec=EmailSender)
-    container.email_service.override(email_service_mock)
+    container.email_connection.override(email_service_mock)
     yield
-    container.email_service.reset_override()
+    container.email_connection.reset_override()
 
 
 @pytest.fixture

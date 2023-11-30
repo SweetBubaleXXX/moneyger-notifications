@@ -12,7 +12,7 @@ from .consumers.message_sent import MessageSentConsumer
 from .consumers.user_created import UserCreatedConsumer
 from .consumers.user_credentials_rpc import UserCredentialsRpc
 from .consumers.user_deleted import UserDeletedConsumer
-from .services.email import EmailNotifier
+from .services.email import EmailService
 from .services.messages import RedisMessageStorage
 from .services.users import UsersService
 
@@ -54,20 +54,20 @@ class Container(containers.DeclarativeContainer):
     jinja_environment = jinja2.Environment(
         loader=jinja2.FileSystemLoader("app/templates")
     )
-    email_service = providers.Factory(
+    email_connection = providers.Factory(
         EmailSender,
         config.mail_host,
         config.mail_port,
         config.mail_user,
         config.mail_password,
     )
-    email_service.add_attributes(
+    email_connection.add_attributes(
         templates_html=jinja_environment,
         templates_text=jinja_environment,
     )
-    email_notifier = providers.Singleton(
-        EmailNotifier,
-        email_service,
+    email_service = providers.Singleton(
+        EmailService,
+        email_connection,
         users_service,
         message_storage,
     )
