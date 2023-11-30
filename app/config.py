@@ -1,7 +1,9 @@
 from typing import Iterable, Literal
 
+from celery.schedules import crontab
 from pydantic import (
     AmqpDsn,
+    AnyUrl,
     BaseModel,
     BaseSettings,
     MongoDsn,
@@ -47,6 +49,22 @@ class Settings(BaseSettings):
 
     cache_url: RedisDsn | None
 
+    mail_host: str | None
+    mail_port: int | None
+    mail_user: str | None
+    mail_password: str | None
+
+    celery_broker_url: AnyUrl | None
+    celery_result_backend_url: AnyUrl | None
+    celery_beat_schedule: dict[str, dict] = {
+        "notify-recent-messages-daily": {
+            "task": "tasks.notify_recent_messages",
+            "schedule": crontab(minute=0, hour=0),
+        },
+    }
+
+    message_storage_max_size: int = 100
+
     mq_url: AmqpDsn | None
     mq_users_exchange: str = "users_exchange"
     mq_messages_exchange: str = "messages_exchange"
@@ -62,13 +80,6 @@ class Settings(BaseSettings):
     mq_message_sent_queue: QueueConfig = MessageSentQueueConfig(
         exchange=mq_messages_exchange
     )
-
-    message_storage_max_size: int = 100
-
-    mail_host: str | None
-    mail_port: int | None
-    mail_user: str | None
-    mail_password: str | None
 
     @root_validator
     def check_production_required_settings(cls, values):
