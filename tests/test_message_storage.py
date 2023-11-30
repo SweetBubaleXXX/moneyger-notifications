@@ -1,28 +1,9 @@
 from unittest.mock import MagicMock
 
-import pytest
-
-from app.containers import Container
 from app.models import Message
 from app.services.messages import MessageStorage
 
 from .factories import MessageFactory
-
-
-@pytest.fixture
-def storage(container: Container):
-    return container.message_storage()
-
-
-@pytest.fixture
-def message():
-    return MessageFactory()
-
-
-@pytest.fixture
-def saved_message(storage: MessageStorage, message: Message):
-    storage.push(message)
-    return message
 
 
 def test_push(storage: MessageStorage, message: Message):

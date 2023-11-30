@@ -1,14 +1,18 @@
+from unittest.mock import MagicMock
+
 import fakeredis
 import mongomock
 import pytest
 from dependency_injector import providers
 from pymongo.database import Database
+from redmail import EmailSender
 
 from app import application
 from app.containers import Container
-from app.models import User
+from app.models import Message, User
+from app.services.messages import MessageStorage
 
-from .factories import UserFactory
+from .factories import MessageFactory, UserFactory
 
 
 @pytest.fixture()
@@ -30,6 +34,14 @@ def mock_cache(container: Container):
     container.cache.reset_override()
 
 
+@pytest.fixture(autouse=True)
+def mock_email_service(container: Container):
+    email_service_mock = MagicMock(spec=EmailSender)
+    container.email_service.override(email_service_mock)
+    yield
+    container.email_service.reset_override()
+
+
 @pytest.fixture
 def db(container: Container, mock_database):
     return container.db()
@@ -38,6 +50,11 @@ def db(container: Container, mock_database):
 @pytest.fixture
 def cache(container: Container, mock_cache):
     return container.cache()
+
+
+@pytest.fixture
+def storage(container: Container):
+    return container.message_storage()
 
 
 @pytest.fixture
@@ -60,3 +77,14 @@ def user():
 def saved_user(db: Database, user: User):
     db.users.insert_one(user.dict())
     return user
+
+
+@pytest.fixture
+def message():
+    return MessageFactory()
+
+
+@pytest.fixture
+def saved_message(storage: MessageStorage, message: Message):
+    storage.push(message)
+    return message
