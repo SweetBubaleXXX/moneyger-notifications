@@ -25,6 +25,8 @@ class EmailService:
             )
         )
         recent_messages = message_storage.get_all()
+        if not recent_messages:
+            return
         self.connection.send(
             subject="New messages",
             receivers=recipients,
