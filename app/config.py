@@ -55,10 +55,10 @@ class Settings(BaseSettings):
     mail_password: str | None
 
     celery_broker_url: AnyUrl | None
-    celery_result_backend_url: AnyUrl | None
+    celery_result_backend: AnyUrl | None
     celery_beat_schedule: dict[str, dict] = {
         "notify-recent-messages-daily": {
-            "task": "tasks.notify_recent_messages",
+            "task": "app.celery.tasks.notify_recent_messages",
             "schedule": crontab(minute=0, hour=0),
         },
     }
