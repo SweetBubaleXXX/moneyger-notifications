@@ -4,14 +4,7 @@ from pymongo import ReturnDocument
 from pymongo.database import Database
 
 from ..models import User
-
-
-class AlreadyExists(Exception):
-    pass
-
-
-class NotFound(Exception):
-    pass
+from .exceptions import AlreadyExists, NotFound
 
 
 class UsersService:

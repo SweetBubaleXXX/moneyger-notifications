@@ -5,7 +5,8 @@ from pydantic import ValidationError
 
 from ..config import QueueConfig
 from ..models import User
-from ..services import users
+from ..services.exceptions import AlreadyExists
+from ..services.users import UsersService
 from .base import Consumer
 
 
@@ -14,7 +15,7 @@ class UserCreatedConsumer(Consumer):
         self,
         connection: pika.BaseConnection,
         queue: QueueConfig,
-        users_service: users.UsersService,
+        users_service: UsersService,
     ) -> None:
         super().__init__(connection, queue)
         self.users_service = users_service
@@ -29,7 +30,7 @@ class UserCreatedConsumer(Consumer):
         try:
             user = User.parse_raw(body)
             self.users_service.create_user(user)
-        except (ValidationError, users.AlreadyExists):
+        except (ValidationError, AlreadyExists):
             channel.basic_reject(method.delivery_tag, requeue=False)
             raise
         channel.basic_ack(method.delivery_tag)

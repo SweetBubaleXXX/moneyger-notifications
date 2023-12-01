@@ -3,16 +3,17 @@ from unittest.mock import MagicMock
 import fakeredis
 import mongomock
 import pytest
+from bson.decimal128 import Decimal128
 from dependency_injector import providers
-from pymongo.database import Database
+from mongomock import Database
 from redmail import EmailSender
 
 from app import application
 from app.containers import Container
-from app.models import Message, User
+from app.models import Message, Transaction, User
 from app.services.messages import MessageStorage
 
-from .factories import MessageFactory, UserFactory
+from . import factories
 
 
 @pytest.fixture()
@@ -70,7 +71,7 @@ def client(app):
 
 @pytest.fixture
 def user():
-    return UserFactory()
+    return factories.UserFactory()
 
 
 @pytest.fixture
@@ -80,8 +81,21 @@ def saved_user(db: Database, user: User):
 
 
 @pytest.fixture
+def transaction():
+    return factories.TransactionFactory()
+
+
+@pytest.fixture
+def saved_transaction(db: Database, transaction: Transaction):
+    db.transactions.insert_one(
+        transaction.dict() | {"amount": Decimal128(transaction.amount)}
+    )
+    return transaction
+
+
+@pytest.fixture
 def message():
-    return MessageFactory()
+    return factories.MessageFactory()
 
 
 @pytest.fixture

@@ -4,7 +4,8 @@ from pika.spec import Basic
 
 from ..config import QueueConfig
 from ..models import UserCredentialsResponse
-from ..services import users
+from ..services.exceptions import NotFound
+from ..services.users import UsersService
 from .base import Consumer
 
 
@@ -13,7 +14,7 @@ class UserCredentialsRpc(Consumer):
         self,
         connection: pika.BaseConnection,
         queue: QueueConfig,
-        users_service: users.UsersService,
+        users_service: UsersService,
     ) -> None:
         super().__init__(connection, queue)
         self.users_service = users_service
@@ -32,7 +33,7 @@ class UserCredentialsRpc(Consumer):
             raise
         try:
             user = self.users_service.get_user_by_id(account_id)
-        except users.NotFound:
+        except NotFound:
             self._send_response(
                 UserCredentialsResponse(success=False),
                 channel,

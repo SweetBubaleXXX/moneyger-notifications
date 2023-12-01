@@ -1,9 +1,10 @@
 import pytest
-from pymongo.database import Database
+from mongomock import Database
 
 from app.containers import Container
 from app.models import User
-from app.services.users import AlreadyExists, NotFound, UsersService
+from app.services.exceptions import AlreadyExists, NotFound
+from app.services.users import UsersService
 
 from .factories import UserFactory
 
@@ -93,9 +94,6 @@ def test_delete_user(
     assert documents_in_db == 0
 
 
-def test_delete_user_not_found(
-    service: UsersService,
-    user: User,
-):
+def test_delete_user_not_found(service: UsersService):
     with pytest.raises(NotFound):
-        service.delete_user(user.account_id)
+        service.delete_user(123)

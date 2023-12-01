@@ -1,7 +1,7 @@
 from datetime import datetime
 
 import factory
-from factory.fuzzy import FuzzyText
+from factory.fuzzy import FuzzyDecimal, FuzzyText
 
 from app import models
 
@@ -14,6 +14,16 @@ class UserFactory(factory.Factory):
     email = factory.Faker("email")
     token = FuzzyText(length=32)
     subscribed_to_chat = False
+
+
+class TransactionFactory(factory.Factory):
+    class Meta:
+        model = models.Transaction
+
+    transaction_id = factory.Sequence(int)
+    account_id = 1
+    amount = FuzzyDecimal(1, 1000)
+    transaction_time = factory.LazyAttribute(lambda *_: datetime.utcnow())
 
 
 class MessageFactory(factory.Factory):

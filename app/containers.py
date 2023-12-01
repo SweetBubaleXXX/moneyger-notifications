@@ -14,6 +14,7 @@ from .consumers.user_credentials_rpc import UserCredentialsRpc
 from .consumers.user_deleted import UserDeletedConsumer
 from .services.email import EmailService
 from .services.messages import RedisMessageStorage
+from .services.transactions import TransactionsService
 from .services.users import UsersService
 
 
@@ -45,6 +46,7 @@ class Container(containers.DeclarativeContainer):
     cache = providers.Singleton(redis.from_url, config.cache_url)
 
     users_service = providers.Factory(UsersService, db)
+    transactions_service = providers.Factory(TransactionsService, db)
 
     message_storage = providers.Singleton(
         RedisMessageStorage,

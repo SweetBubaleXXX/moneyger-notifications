@@ -1,4 +1,5 @@
 from datetime import datetime
+from decimal import Decimal
 from typing import Self, Type, TypeVar
 
 from pydantic import BaseModel, EmailStr
@@ -57,3 +58,10 @@ class Message(BaseModel):
 
     def dict_of_str(self) -> dict[str, str]:
         return {key: str(value) for key, value in self}
+
+
+class Transaction(BaseModel):
+    transaction_id: int
+    account_id: int
+    amount: Decimal
+    transaction_time: datetime
