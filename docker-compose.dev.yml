@@ -27,6 +27,31 @@ services:
     volumes:
       - ./:/app:ro
 
+  celery_worker:
+    extends:
+      file: docker-compose.yml
+      service: celery_worker
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    command: poetry run celery -A app.celery.entrypoint worker --autoscale 2,1 --loglevel INFO --events
+    restart: "no"
+    volumes:
+      - ./:/app:ro
+
+  celery_beat:
+    extends:
+      file: docker-compose.yml
+      service: celery_beat
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    command: poetry run celery -A app.celery.entrypoint beat -s /var/lib/celery/celerybeat-schedule --loglevel INFO
+    restart: "no"
+    volumes:
+      - ./:/app:ro
+      - celery_beat_data:/var/lib/celery
+
   db:
     extends:
       file: docker-compose.yml
@@ -56,3 +81,4 @@ services:
 volumes:
   database_data:
   rabbitmq_data:
+  celery_beat_data:

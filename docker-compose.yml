@@ -17,11 +17,25 @@ services:
       DATABASE_PASSWORD: ${DATABASE_PASSWORD:?}
       CACHE_URL: redis://:${REDIS_PASSWORD:?}@redis:6379/0
       MQ_URL: amqp://${RABBITMQ_USER:?}:${RABBITMQ_PASSWORD:?}@rabbitmq:5672/%2F
+      CELERY_BROKER_URL: amqp://${RABBITMQ_USER:?}:${RABBITMQ_PASSWORD:?}@rabbitmq:5672/%2F
+      CELERY_RESULT_BACKEND: redis://:${REDIS_PASSWORD:?}@redis:6379/1
 
   mq_consumer:
     extends:
       service: server
     command: python ./start_consumers.py
+
+  celery_worker:
+    extends:
+      service: server
+    command: celery -A app.celery.entrypoint worker --autoscale 2,1 --loglevel INFO --events
+
+  celery_beat:
+    extends:
+      service: server
+    command: celery -A app.celery.entrypoint beat -s /var/lib/celery/celerybeat-schedule --loglevel INFO
+    volumes:
+      - celery_beat_data:/var/lib/celery
 
   db:
     image: mongo:7
@@ -59,3 +73,4 @@ services:
 volumes:
   database_data:
   rabbitmq_data:
+  celery_beat_data:
