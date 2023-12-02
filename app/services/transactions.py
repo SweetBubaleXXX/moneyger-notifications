@@ -1,8 +1,9 @@
+from collections.abc import Collection
 from datetime import datetime
-from typing import Iterator
+from typing import Iterable, Iterator
 
 from bson.decimal128 import Decimal128
-from pymongo import ASCENDING
+from pymongo import ASCENDING, ReplaceOne
 from pymongo.database import Database
 
 from ..models import Transaction
@@ -28,21 +29,25 @@ class TransactionsService:
         for transaction in cursor:
             yield Transaction(**transaction)
 
-    def add_transaction(self, transaction: Transaction) -> Transaction:
-        serialized_transaction = transaction.dict()
-        serialized_transaction["amount"] = Decimal128(transaction.amount)
-        self.collection.find_one_and_replace(
-            {"transaction_id": transaction.transaction_id},
-            serialized_transaction,
-            upsert=True,
-        )
-        return transaction
+    def add_transactions(self, transactions: Iterable[Transaction]) -> None:
+        requests = []
+        for transaction in transactions:
+            serialized_transaction = transaction.dict()
+            serialized_transaction["amount"] = Decimal128(transaction.amount)
+            requests.append(
+                ReplaceOne(
+                    {"transaction_id": transaction.transaction_id},
+                    serialized_transaction,
+                    upsert=True,
+                )
+            )
+        self.collection.bulk_write(requests)
 
-    def delete_transactions(self, *transaction_ids: int) -> None:
+    def delete_transactions(self, transaction_ids: Collection[int]) -> None:
         with self.db.client.start_session() as session:
             with session.start_transaction():
                 delete_result = self.collection.delete_many(
-                    {"transaction_id": {"$in": transaction_ids}}
+                    {"transaction_id": {"$in": list(transaction_ids)}}
                 )
                 if delete_result.deleted_count != len(transaction_ids):
                     raise NotFound("Some transactions not found")
