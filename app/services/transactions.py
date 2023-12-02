@@ -38,10 +38,14 @@ class TransactionsService:
         )
         return transaction
 
-    def delete_transaction(self, transaction_id: int) -> None:
-        delete_result = self.collection.delete_one({"transaction_id": transaction_id})
-        if not delete_result.deleted_count:
-            raise NotFound(f"Transaction with id({transaction_id}) not found")
+    def delete_transactions(self, *transaction_ids: int) -> None:
+        with self.db.client.start_session() as session:
+            with session.start_transaction():
+                delete_result = self.collection.delete_many(
+                    {"transaction_id": {"$in": transaction_ids}}
+                )
+                if delete_result.deleted_count != len(transaction_ids):
+                    raise NotFound("Some transactions not found")
 
     def _create_time_range_filters(
         self,

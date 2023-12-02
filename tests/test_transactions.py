@@ -1,5 +1,6 @@
 from datetime import timedelta
 from decimal import Decimal
+from operator import attrgetter
 
 import pytest
 from bson.decimal128 import Decimal128
@@ -60,7 +61,9 @@ def test_filter_transactions_time_range(
 
 
 def test_add_transaction(
-    db: Database, service: TransactionsService, transaction: Transaction
+    db: Database,
+    service: TransactionsService,
+    transaction: Transaction,
 ):
     service.add_transaction(transaction)
     transaction_in_db = db.transactions.find_one(
@@ -70,7 +73,9 @@ def test_add_transaction(
 
 
 def test_add_transaction_replace(
-    db: Database, service: TransactionsService, saved_transaction: Transaction
+    db: Database,
+    service: TransactionsService,
+    saved_transaction: Transaction,
 ):
     updated_transaction = saved_transaction.copy()
     updated_transaction.amount = saved_transaction.amount + Decimal("1.23")
@@ -81,16 +86,39 @@ def test_add_transaction_replace(
     assert str(transaction_in_db["amount"]) != str(saved_transaction.amount)
 
 
-def test_delete_transaction(
-    db: Database, service: TransactionsService, saved_transaction: Transaction
+def test_delete_transactions(
+    db: Database,
+    service: TransactionsService,
+    saved_transaction: Transaction,
 ):
-    service.delete_transaction(saved_transaction.transaction_id)
+    service.delete_transactions(saved_transaction.transaction_id)
     documents_in_db = db.transactions.count_documents(
         {"transaction_id": saved_transaction.transaction_id}
     )
     assert documents_in_db == 0
 
 
-def test_delete_transaction_not_found(service: TransactionsService):
+def test_delete_transactions_bulk(db: Database, service: TransactionsService):
+    transaction_count = 5
+    transactions = [TransactionFactory() for _ in range(transaction_count)]
+    for transaction in transactions:
+        db.transactions.insert_one(
+            transaction.dict() | {"amount": Decimal128(transaction.amount)}
+        )
+    transaction_ids = map(attrgetter("transaction_id"), transactions)
+    service.delete_transactions(*transaction_ids)
+    documents_in_db = db.transactions.count_documents({})
+    assert documents_in_db == 0
+
+
+def test_delete_transactions_not_found(service: TransactionsService):
     with pytest.raises(NotFound):
-        service.delete_transaction(123)
+        service.delete_transactions(123)
+
+
+def test_delete_transactions_bulk_not_found(
+    service: TransactionsService,
+    saved_transaction: Transaction,
+):
+    with pytest.raises(NotFound):
+        service.delete_transactions(saved_transaction.transaction_id, 123)

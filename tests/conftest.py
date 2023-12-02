@@ -6,6 +6,7 @@ import pytest
 from bson.decimal128 import Decimal128
 from dependency_injector import providers
 from mongomock import Database
+from pytest_mock import MockerFixture
 from redmail import EmailSender
 
 from app import application
@@ -22,7 +23,8 @@ def container():
 
 
 @pytest.fixture(autouse=True)
-def mock_database(container: Container):
+def mock_database(mocker: MockerFixture, container: Container):
+    mocker.patch("mongomock.mongo_client.MongoClient.start_session", autospec=True)
     container.db_client.override(providers.Singleton(mongomock.MongoClient))
     yield
     container.db_client.reset_override()
