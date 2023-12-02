@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import Any, Iterable, Iterator
 
 from bson.decimal128 import Decimal128
-from pymongo import ASCENDING, ReplaceOne
+from pymongo import ASCENDING, IndexModel, ReplaceOne
 from pymongo.database import Database
 
 from ..models import Transaction
@@ -14,6 +14,12 @@ class TransactionsService:
     def __init__(self, db: Database):
         self.db = db
         self.collection = self.db.transactions
+        self.collection.create_indexes(
+            [
+                IndexModel("transaction_id", unique=True),
+                IndexModel("account_id"),
+            ]
+        )
 
     @staticmethod
     def serialize_transaction(transaction: Transaction) -> dict[str, Any]:
