@@ -7,7 +7,7 @@ from ..services.transactions import TransactionsService
 from .base import Consumer, MessageContext
 
 
-class TransactionAddedConsumer(Consumer):
+class TransactionsAddedConsumer(Consumer):
     def __init__(
         self,
         connection: pika.BaseConnection,
