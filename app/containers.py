@@ -10,10 +10,10 @@ from .consumers.base import ConsumerExecutor
 from .consumers.executors import BlockingConsumerExecutor
 from .consumers.message_sent import MessageSentConsumer
 from .consumers.transactions_added import TransactionsAddedConsumer
+from .consumers.transactions_deleted import TransactionsDeletedConsumer
 from .consumers.user_created import UserCreatedConsumer
 from .consumers.user_credentials_rpc import UserCredentialsRpc
 from .consumers.user_deleted import UserDeletedConsumer
-from .consumers.transactions_deleted import TransactionsDeletedConsumer
 from .services.email import EmailService
 from .services.messages import RedisMessageStorage
 from .services.transactions import TransactionsService
