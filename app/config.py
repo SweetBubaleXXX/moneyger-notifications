@@ -38,6 +38,11 @@ class TransactionsAddedQueueConfig(QueueConfig):
     bindings: Iterable[str] = ["transaction.event.created", "transaction.event.updated"]
 
 
+class TransactionsDeletedQueueConfig(QueueConfig):
+    name: str = "transaction_removal_queue"
+    bindings: Iterable[str] = ["transaction.event.deleted"]
+
+
 class MessageSentQueueConfig(QueueConfig):
     name: str = "new_messages_queue"
     bindings: Iterable[str] = ["message.event.sent"]
@@ -83,6 +88,9 @@ class Settings(BaseSettings):
         exchange=mq_users_exchange
     )
     mq_transactions_added_queue: QueueConfig = TransactionsAddedQueueConfig(
+        exchange=mq_users_exchange
+    )
+    mq_transactions_deleted_queue: QueueConfig = TransactionsDeletedQueueConfig(
         exchange=mq_users_exchange
     )
     mq_message_sent_queue: QueueConfig = MessageSentQueueConfig(

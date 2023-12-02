@@ -13,6 +13,7 @@ from .consumers.transactions_added import TransactionsAddedConsumer
 from .consumers.user_created import UserCreatedConsumer
 from .consumers.user_credentials_rpc import UserCredentialsRpc
 from .consumers.user_deleted import UserDeletedConsumer
+from .consumers.transactions_deleted import TransactionsDeletedConsumer
 from .services.email import EmailService
 from .services.messages import RedisMessageStorage
 from .services.transactions import TransactionsService
@@ -103,6 +104,12 @@ class Container(containers.DeclarativeContainer):
         queue_config.provided.call(config.mq_transactions_added_queue),
         transactions_service,
     )
+    transactions_deleted_consumer = providers.Factory(
+        TransactionsDeletedConsumer,
+        mq_connection,
+        queue_config.provided.call(config.mq_transactions_deleted_queue),
+        transactions_service,
+    )
     message_sent_consumer = providers.Factory(
         MessageSentConsumer,
         mq_connection,
@@ -116,6 +123,10 @@ class Container(containers.DeclarativeContainer):
         providers.Factory(
             BlockingConsumerExecutor,
             transactions_added_consumer.provider,
+        ),
+        providers.Factory(
+            BlockingConsumerExecutor,
+            transactions_deleted_consumer.provider,
         ),
         providers.Factory(BlockingConsumerExecutor, message_sent_consumer.provider),
     )
