@@ -37,13 +37,13 @@ def test_filter_transactions_time_range(
     service: TransactionsService,
     saved_transaction: Transaction,
 ):
-    old_transation = TransactionFactory(
+    old_transaction = TransactionFactory(
         transaction_time=saved_transaction.transaction_time - timedelta(days=1)
     )
     new_transaction = TransactionFactory(
         transaction_time=saved_transaction.transaction_time + timedelta(days=1)
     )
-    for transaction in (old_transation, new_transaction):
+    for transaction in (old_transaction, new_transaction):
         serialized_transaction = TransactionsService.serialize_transaction(transaction)
         db.transactions.insert_one(serialized_transaction)
     result = list(
