@@ -3,7 +3,6 @@ from unittest.mock import MagicMock
 import fakeredis
 import mongomock
 import pytest
-from bson.decimal128 import Decimal128
 from dependency_injector import providers
 from mongomock import Database
 from pytest_mock import MockerFixture
@@ -13,6 +12,7 @@ from app import application
 from app.containers import Container
 from app.models import Message, Transaction, User
 from app.services.messages import MessageStorage
+from app.services.transactions import TransactionsService
 
 from . import factories
 
@@ -89,9 +89,8 @@ def transaction():
 
 @pytest.fixture
 def saved_transaction(db: Database, transaction: Transaction):
-    db.transactions.insert_one(
-        transaction.dict() | {"amount": Decimal128(transaction.amount)}
-    )
+    serialized_transaction = TransactionsService.serialize_transaction(transaction)
+    db.transactions.insert_one(serialized_transaction)
     return transaction
 
 

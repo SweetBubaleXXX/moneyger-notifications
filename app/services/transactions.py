@@ -1,6 +1,6 @@
 from collections.abc import Collection
 from datetime import datetime
-from typing import Iterable, Iterator
+from typing import Any, Iterable, Iterator
 
 from bson.decimal128 import Decimal128
 from pymongo import ASCENDING, ReplaceOne
@@ -14,6 +14,12 @@ class TransactionsService:
     def __init__(self, db: Database):
         self.db = db
         self.collection = self.db.transactions
+
+    @staticmethod
+    def serialize_transaction(transaction: Transaction) -> dict[str, Any]:
+        serialized_transaction = transaction.dict()
+        serialized_transaction["amount"] = Decimal128(transaction.amount)
+        return serialized_transaction
 
     def filter_transactions(
         self,
@@ -32,8 +38,7 @@ class TransactionsService:
     def add_transactions(self, transactions: Iterable[Transaction]) -> None:
         requests = []
         for transaction in transactions:
-            serialized_transaction = transaction.dict()
-            serialized_transaction["amount"] = Decimal128(transaction.amount)
+            serialized_transaction = self.serialize_transaction(transaction)
             requests.append(
                 ReplaceOne(
                     {"transaction_id": transaction.transaction_id},

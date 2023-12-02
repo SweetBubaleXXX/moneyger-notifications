@@ -2,7 +2,6 @@ from datetime import timedelta
 from decimal import Decimal
 
 import pytest
-from bson.decimal128 import Decimal128
 from mongomock import Database
 
 from app.containers import Container
@@ -45,9 +44,8 @@ def test_filter_transactions_time_range(
         transaction_time=saved_transaction.transaction_time + timedelta(days=1)
     )
     for transaction in (old_transation, new_transaction):
-        db.transactions.insert_one(
-            transaction.dict() | {"amount": Decimal128(transaction.amount)}
-        )
+        serialized_transaction = TransactionsService.serialize_transaction(transaction)
+        db.transactions.insert_one(serialized_transaction)
     result = list(
         service.filter_transactions(
             account_id=saved_transaction.account_id,
@@ -79,9 +77,8 @@ def test_add_transactions_bulk(
     transaction_count = 5
     transactions = [TransactionFactory() for _ in range(transaction_count)]
     for transaction in transactions:
-        db.transactions.insert_one(
-            transaction.dict() | {"amount": Decimal128(transaction.amount)}
-        )
+        serialized_transaction = TransactionsService.serialize_transaction(transaction)
+        db.transactions.insert_one(serialized_transaction)
     service.add_transactions(transactions)
     documents_in_db = db.transactions.count_documents({})
     assert documents_in_db == transaction_count
@@ -117,9 +114,8 @@ def test_delete_transactions_bulk(db: Database, service: TransactionsService):
     transaction_count = 5
     transactions = [TransactionFactory() for _ in range(transaction_count)]
     for transaction in transactions:
-        db.transactions.insert_one(
-            transaction.dict() | {"amount": Decimal128(transaction.amount)}
-        )
+        serialized_transaction = TransactionsService.serialize_transaction(transaction)
+        db.transactions.insert_one(serialized_transaction)
     transaction_ids = [transaction.transaction_id for transaction in transactions]
     service.delete_transactions(transaction_ids)
     documents_in_db = db.transactions.count_documents({})
