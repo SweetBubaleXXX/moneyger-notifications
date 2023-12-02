@@ -1,12 +1,10 @@
 import pika
-from pika.channel import Channel
-from pika.spec import Basic
 from pydantic import ValidationError
 
 from ..config import QueueConfig
 from ..models import Message
 from ..services.messages import MessageStorage
-from .base import Consumer
+from .base import Consumer, MessageContext
 
 
 class MessageSentConsumer(Consumer):
@@ -19,17 +17,10 @@ class MessageSentConsumer(Consumer):
         super().__init__(connection, queue)
         self.message_storage = message_storage
 
-    def process_message(
-        self,
-        channel: Channel,
-        method: Basic.Deliver,
-        properties: pika.BasicProperties,
-        body: bytes,
-    ) -> None:
+    def process_message(self, context: MessageContext) -> None:
         try:
-            message = Message.parse_raw(body)
+            message = Message.parse_raw(context.body)
         except ValidationError:
-            channel.basic_reject(method.delivery_tag, requeue=False)
+            self.reject_message(context)
             raise
         self.message_storage.push(message)
-        channel.basic_ack(method.delivery_tag)
