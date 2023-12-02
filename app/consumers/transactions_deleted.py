@@ -3,6 +3,7 @@ import json
 import pika
 
 from ..config import QueueConfig
+from ..services.exceptions import NotFound
 from ..services.transactions import TransactionsService
 from .base import Consumer, MessageContext
 
@@ -20,7 +21,7 @@ class TransactionsDeletedConsumer(Consumer):
     def process_message(self, context: MessageContext) -> None:
         try:
             transactions = json.loads(context.body)
-        except json.JSONDecodeError:
+            self.transactions_service.delete_transactions(transactions)
+        except (json.JSONDecodeError, NotFound):
             self.reject_message(context)
             raise
-        self.transactions_service.delete_transactions(transactions)

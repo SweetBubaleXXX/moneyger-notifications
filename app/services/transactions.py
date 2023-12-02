@@ -49,13 +49,11 @@ class TransactionsService:
         self.collection.bulk_write(requests)
 
     def delete_transactions(self, transaction_ids: Collection[int]) -> None:
-        with self.db.client.start_session() as session:
-            with session.start_transaction():
-                delete_result = self.collection.delete_many(
-                    {"transaction_id": {"$in": list(transaction_ids)}}
-                )
-                if delete_result.deleted_count != len(transaction_ids):
-                    raise NotFound("Some transactions not found")
+        delete_result = self.collection.delete_many(
+            {"transaction_id": {"$in": list(transaction_ids)}}
+        )
+        if delete_result.deleted_count != len(transaction_ids):
+            raise NotFound("Some transactions not found")
 
     def _create_time_range_filters(
         self,
