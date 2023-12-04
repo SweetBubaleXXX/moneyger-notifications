@@ -70,7 +70,7 @@ def test_compute_daily_total(db: Database, service: TransactionsService):
         db.transactions.insert_one(serialized_transaction)
     result = service.compute_daily_total(account_id)
     today_total = next(result)
-    assert today_total["total_amount"] == expected_total
+    assert today_total.total_amount == expected_total
 
 
 def test_add_transactions(

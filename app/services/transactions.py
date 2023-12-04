@@ -6,7 +6,7 @@ from bson.decimal128 import Decimal128
 from pymongo import ASCENDING, IndexModel, ReplaceOne
 from pymongo.database import Database
 
-from ..models import Transaction
+from ..models import Transaction, TransactionTotalByDate
 from .exceptions import NotFound
 
 
@@ -43,17 +43,15 @@ class TransactionsService:
         account_id: int,
         start_time: datetime | None = None,
         end_time: datetime | None = None,
-    ) -> Iterator[dict]:
+    ) -> Iterator[TransactionTotalByDate]:
         filters = self._create_filters(account_id, start_time, end_time)
         pipeline = self._create_daily_total_pipeline(filters)
         cursor = self.collection.aggregate(pipeline)
-        return (
-            {
-                "date": result["date"],
-                "total_amount": result["total_amount"].to_decimal(),
-            }
-            for result in cursor
-        )
+        for result in cursor:
+            yield TransactionTotalByDate(
+                date=result["date"],
+                total_amount=result["total_amount"].to_decimal(),
+            )
 
     def add_transactions(self, transactions: Iterable[Transaction]) -> None:
         requests = []
