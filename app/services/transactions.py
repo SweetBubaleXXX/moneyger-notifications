@@ -1,13 +1,21 @@
 from collections.abc import Collection
-from datetime import datetime
-from typing import Any, Iterable, Iterator
+from datetime import date, datetime
+from decimal import Decimal
+from typing import Any, Iterable, Iterator, TypedDict
 
 from bson.decimal128 import Decimal128
 from pymongo import ASCENDING, IndexModel, ReplaceOne
 from pymongo.database import Database
 
-from ..models import Transaction, TransactionTotalByDate
+from ..models import Transaction
 from .exceptions import NotFound
+
+_DATE_FORMAT = "%Y-%m-%d"
+
+
+class TransactionTotalByDate(TypedDict):
+    date: date
+    total_amount: Decimal
 
 
 class TransactionsService:
@@ -49,7 +57,7 @@ class TransactionsService:
         cursor = self.collection.aggregate(pipeline)
         for result in cursor:
             yield TransactionTotalByDate(
-                date=result["date"],
+                date=datetime.strptime(result["date"], _DATE_FORMAT).date(),
                 total_amount=result["total_amount"].to_decimal(),
             )
 
@@ -98,7 +106,7 @@ class TransactionsService:
                 "$group": {
                     "_id": {
                         "$dateToString": {
-                            "format": "%Y-%m-%d",
+                            "format": _DATE_FORMAT,
                             "date": "$transaction_time",
                         }
                     },

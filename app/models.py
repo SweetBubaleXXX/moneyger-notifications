@@ -1,4 +1,4 @@
-from datetime import date, datetime
+from datetime import datetime
 from decimal import Decimal
 from typing import Self, Type, TypeVar
 
@@ -65,8 +65,3 @@ class Transaction(BaseModel):
     account_id: int
     amount: Decimal
     transaction_time: datetime
-
-
-class TransactionTotalByDate(BaseModel):
-    date: date
-    total_amount: Decimal
