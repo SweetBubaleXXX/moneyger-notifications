@@ -33,13 +33,27 @@ class TransactionsService:
         start_time: datetime | None = None,
         end_time: datetime | None = None,
     ) -> Iterator[Transaction]:
-        filters = {"account_id": account_id}
-        transaction_time_filters = self._create_time_range_filters(start_time, end_time)
-        if transaction_time_filters:
-            filters["transaction_time"] = transaction_time_filters
+        filters = self._create_filters(account_id, start_time, end_time)
         cursor = self.collection.find(filters).sort("transaction_time", ASCENDING)
         for transaction in cursor:
             yield Transaction(**transaction)
+
+    def compute_daily_total(
+        self,
+        account_id: int,
+        start_time: datetime | None = None,
+        end_time: datetime | None = None,
+    ) -> Iterator[dict]:
+        filters = self._create_filters(account_id, start_time, end_time)
+        pipeline = self._create_daily_total_pipeline(filters)
+        cursor = self.collection.aggregate(pipeline)
+        return (
+            {
+                "date": result["date"],
+                "total_amount": result["total_amount"].to_decimal(),
+            }
+            for result in cursor
+        )
 
     def add_transactions(self, transactions: Iterable[Transaction]) -> None:
         requests = []
@@ -61,14 +75,43 @@ class TransactionsService:
         if delete_result.deleted_count != len(transaction_ids):
             raise NotFound("Some transactions not found")
 
-    def _create_time_range_filters(
+    def _create_filters(
         self,
+        account_id: int,
         start_time: datetime | None = None,
         end_time: datetime | None = None,
-    ) -> dict[str, datetime]:
+    ) -> dict[str, Any]:
+        filters = {"account_id": account_id}
         time_range_filters = {}
         if start_time:
             time_range_filters["$gte"] = start_time
         if end_time:
             time_range_filters["$lt"] = end_time
-        return time_range_filters
+        if time_range_filters:
+            filters["transaction_time"] = time_range_filters
+        return filters
+
+    def _create_daily_total_pipeline(self, filters: dict[str, Any]) -> list[dict]:
+        return [
+            {
+                "$match": filters,
+            },
+            {
+                "$group": {
+                    "_id": {
+                        "$dateToString": {
+                            "format": "%Y-%m-%d",
+                            "date": "$transaction_time",
+                        }
+                    },
+                    "total_amount": {"$sum": "$amount"},
+                }
+            },
+            {
+                "$project": {
+                    "_id": 0,
+                    "date": "$_id",
+                    "total_amount": 1,
+                }
+            },
+        ]

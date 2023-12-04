@@ -57,6 +57,22 @@ def test_filter_transactions_time_range(
     assert result[0].account_id == saved_transaction.account_id
 
 
+def test_compute_daily_total(db: Database, service: TransactionsService):
+    account_id = 123
+    expected_total = Decimal(100)
+    transaction_quantity = 10
+    for _ in range(transaction_quantity):
+        transaction = TransactionFactory(
+            account_id=account_id,
+            amount=expected_total / transaction_quantity,
+        )
+        serialized_transaction = TransactionsService.serialize_transaction(transaction)
+        db.transactions.insert_one(serialized_transaction)
+    result = service.compute_daily_total(account_id)
+    today_total = next(result)
+    assert today_total["total_amount"] == expected_total
+
+
 def test_add_transactions(
     db: Database,
     service: TransactionsService,
