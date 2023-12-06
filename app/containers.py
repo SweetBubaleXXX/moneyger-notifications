@@ -16,6 +16,7 @@ from .consumers.user_credentials_rpc import UserCredentialsRpc
 from .consumers.user_deleted import UserDeletedConsumer
 from .services.email import EmailService
 from .services.messages import RedisMessageStorage
+from .services.predictions import PredictionsService
 from .services.transactions import TransactionsService
 from .services.users import UsersService
 
@@ -49,6 +50,7 @@ class Container(containers.DeclarativeContainer):
 
     users_service = providers.Factory(UsersService, db)
     transactions_service = providers.Factory(TransactionsService, db)
+    predictions_service = providers.Factory(PredictionsService, transactions_service)
 
     message_storage = providers.Singleton(
         RedisMessageStorage,
@@ -75,6 +77,7 @@ class Container(containers.DeclarativeContainer):
         email_connection,
         users_service,
         message_storage,
+        predictions_service,
     )
 
     mq_params = providers.Singleton(pika.URLParameters, config.mq_url)

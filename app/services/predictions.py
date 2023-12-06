@@ -1,5 +1,7 @@
 from datetime import datetime, timedelta
 from decimal import Decimal
+from enum import StrEnum, auto
+from typing import Callable
 
 import pandas as pd
 import pmdarima
@@ -8,9 +10,21 @@ from .exceptions import NotFound
 from .transactions import TransactionsService
 
 
+class PredictionPeriod(StrEnum):
+    WEEK = auto()
+    MONTH = auto()
+
+
 class PredictionsService:
     def __init__(self, transactions_service: TransactionsService) -> None:
         self.transactions_service = transactions_service
+
+    def predict_period(self, account_id: int, period: PredictionPeriod) -> Decimal:
+        prediction_funcs: dict[PredictionPeriod, Callable[[int], Decimal]] = {
+            PredictionPeriod.WEEK: self.predict_week,
+            PredictionPeriod.MONTH: self.predict_month,
+        }
+        return prediction_funcs[period](account_id)
 
     def predict_week(self, account_id: int) -> Decimal:
         daily_totals = self._get_totals(account_id, days=365)

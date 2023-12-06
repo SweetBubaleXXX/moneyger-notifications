@@ -15,6 +15,7 @@ class UserCredentials(BaseModel):
 
 class UserSettings(BaseModel):
     subscribed_to_chat: bool = False
+    subscribed_to_predictions: bool = False
 
 
 class User(UserCredentials, UserSettings):

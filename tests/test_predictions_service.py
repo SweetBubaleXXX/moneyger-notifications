@@ -1,13 +1,13 @@
 from datetime import timedelta
-from mongomock import Database
 
 import pytest
+from mongomock import Database
 
 from app.containers import Container
-from app.services.predictions import PredictionsService
-from app.services.exceptions import NotFound
-from app.services.transactions import TransactionsService
 from app.models import Transaction
+from app.services.exceptions import NotFound
+from app.services.predictions import PredictionPeriod, PredictionsService
+from app.services.transactions import TransactionsService
 
 from .factories import TransactionFactory
 
@@ -59,3 +59,12 @@ def test_predict_month(
 ):
     prediction = service.predict_month(dataset[0].account_id)
     assert prediction > 0
+
+
+def test_predict_period(
+    service: PredictionsService,
+    dataset: list[Transaction],
+):
+    for period in PredictionPeriod:
+        prediction = service.predict_period(dataset[0].account_id, period)
+        assert prediction > 0
