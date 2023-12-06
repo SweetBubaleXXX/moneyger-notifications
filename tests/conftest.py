@@ -93,6 +93,18 @@ def saved_transaction(db: Database, transaction: Transaction):
 
 
 @pytest.fixture
+def saved_transactions_bulk(db: Database, request: pytest.FixtureRequest):
+    transactions = [factories.TransactionFactory() for _ in range(request.param)]
+    db.transactions.insert_many(
+        (
+            TransactionsService.serialize_transaction(transaction)
+            for transaction in transactions
+        )
+    )
+    return transactions
+
+
+@pytest.fixture
 def message():
     return factories.MessageFactory()
 

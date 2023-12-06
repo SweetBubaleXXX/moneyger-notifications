@@ -1,5 +1,6 @@
 from datetime import timedelta
 from decimal import Decimal
+from operator import attrgetter
 
 import pytest
 from mongomock import Database
@@ -85,19 +86,15 @@ def test_add_transactions(
     assert transaction_in_db
 
 
+@pytest.mark.parametrize("saved_transactions_bulk", [5], indirect=True)
 def test_add_transactions_bulk(
     db: Database,
     service: TransactionsService,
-    transaction: Transaction,
+    saved_transactions_bulk: list[Transaction],
 ):
-    transaction_count = 5
-    transactions = [TransactionFactory() for _ in range(transaction_count)]
-    for transaction in transactions:
-        serialized_transaction = TransactionsService.serialize_transaction(transaction)
-        db.transactions.insert_one(serialized_transaction)
-    service.add_transactions(transactions)
+    service.add_transactions(saved_transactions_bulk)
     documents_in_db = db.transactions.count_documents({})
-    assert documents_in_db == transaction_count
+    assert documents_in_db == len(saved_transactions_bulk)
 
 
 def test_add_transactions_replace(
@@ -126,14 +123,14 @@ def test_delete_transactions(
     assert documents_in_db == 0
 
 
-def test_delete_transactions_bulk(db: Database, service: TransactionsService):
-    transaction_count = 5
-    transactions = [TransactionFactory() for _ in range(transaction_count)]
-    for transaction in transactions:
-        serialized_transaction = TransactionsService.serialize_transaction(transaction)
-        db.transactions.insert_one(serialized_transaction)
-    transaction_ids = [transaction.transaction_id for transaction in transactions]
-    service.delete_transactions(transaction_ids)
+@pytest.mark.parametrize("saved_transactions_bulk", [5], indirect=True)
+def test_delete_transactions_bulk(
+    db: Database,
+    service: TransactionsService,
+    saved_transactions_bulk: list[Transaction],
+):
+    transaction_ids = map(attrgetter("transaction_id"), saved_transactions_bulk)
+    service.delete_transactions(list(transaction_ids))
     documents_in_db = db.transactions.count_documents({})
     assert documents_in_db == 0
 
