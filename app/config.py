@@ -69,7 +69,15 @@ class Settings(BaseSettings):
     celery_beat_schedule: dict[str, dict] = {
         "notify-recent-messages-daily": {
             "task": "app.celery.tasks.notify_recent_messages",
-            "schedule": crontab(minute=0, hour=0),
+            "schedule": crontab(minute=0, hour=9),
+        },
+        "send-predictions-weekly": {
+            "task": "app.celery.tasks.send_week_predictions",
+            "schedule": crontab(minute=0, hour=20, day_of_week="sun"),
+        },
+        "send-predictions-monthly": {
+            "task": "app.celery.tasks.send_month_predictions",
+            "schedule": crontab(minute=0, hour=6, day_of_month=1),
         },
     }
 
