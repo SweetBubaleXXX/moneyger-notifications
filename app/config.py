@@ -107,7 +107,16 @@ class Settings(BaseSettings):
 
     @root_validator
     def check_production_required_settings(cls, values):
-        production_required_settings = ["database_url", "cache_url", "mq_url"]
+        production_required_settings = [
+            "database_url",
+            "cache_url",
+            "mq_url",
+            "mail_host",
+            "mail_user",
+            "mail_password",
+            "celery_broker_url",
+            "celery_result_backend",
+        ]
         testing = values.get("testing")
         if not testing:
             for field in production_required_settings:

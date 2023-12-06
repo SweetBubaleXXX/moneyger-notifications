@@ -24,11 +24,13 @@ from .services.users import UsersService
 class Container(containers.DeclarativeContainer):
     wiring_config = containers.WiringConfiguration(
         packages=[
-            ".celery",
             ".consumers",
             ".middleware",
             ".resources",
             ".services",
+        ],
+        modules=[
+            ".celery.tasks",
         ],
     )
     __self__ = providers.Self()
