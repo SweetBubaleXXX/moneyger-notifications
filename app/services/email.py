@@ -59,7 +59,7 @@ class EmailService:
         self.connection.send(
             subject=f"Prediction for a {period.lower()}",
             receivers=[user.email],
-            html_template="prediction",
+            html_template="prediction.html",
             body_params={
                 "period": period.lower(),
                 "amount": str(prediction),
