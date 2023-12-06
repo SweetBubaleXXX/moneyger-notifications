@@ -4,6 +4,7 @@ from decimal import Decimal
 import pandas as pd
 import pmdarima
 
+from .exceptions import NotFound
 from .transactions import TransactionsService
 
 
@@ -25,6 +26,8 @@ class PredictionsService:
             start_time=datetime.now() - timedelta(days=days),
         )
         dataset = pd.DataFrame(daily_totals)
+        if not len(dataset):
+            raise NotFound("No transactions fot given period")
         dataset["date"] = pd.to_datetime(dataset["date"])
         dataset.set_index("date", inplace=True)
         return dataset
