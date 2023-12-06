@@ -1,4 +1,4 @@
-FROM python:3.11-alpine as builder
+FROM python:3.11-slim as builder
 
 RUN pip install poetry~=1.5
 
@@ -14,7 +14,7 @@ COPY pyproject.toml poetry.lock ./
 RUN --mount=type=cache,target=$POETRY_CACHE_DIR \
     poetry install --with prod --without dev --no-root
 
-FROM python:3.11-alpine
+FROM python:3.11-slim
 
 ENV PYTHONUNBUFFERED 1 \
     PYTHONDONTWRITEBYTECODE 1
