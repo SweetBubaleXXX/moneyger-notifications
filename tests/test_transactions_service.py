@@ -21,7 +21,7 @@ def service(container: Container):
 def test_filter_transactions_not_found(
     service: TransactionsService,
 ):
-    result = service.filter_transactions(account_id=0)
+    result = service.filter_transactions({"account_id": 0})
     assert list(result) == []
 
 
@@ -29,7 +29,12 @@ def test_filter_transactions_without_time_range(
     service: TransactionsService,
     saved_transaction: Transaction,
 ):
-    result = service.filter_transactions(account_id=saved_transaction.account_id)
+    result = service.filter_transactions(
+        {
+            "account_id": saved_transaction.account_id,
+            "transaction_type": saved_transaction.transaction_type,
+        }
+    )
     assert next(result).transaction_id == saved_transaction.transaction_id
 
 
@@ -49,9 +54,11 @@ def test_filter_transactions_time_range(
         db.transactions.insert_one(serialized_transaction)
     result = list(
         service.filter_transactions(
-            account_id=saved_transaction.account_id,
-            start_time=saved_transaction.transaction_time - timedelta(hours=1),
-            end_time=saved_transaction.transaction_time + timedelta(hours=1),
+            {
+                "account_id": saved_transaction.account_id,
+                "start_time": saved_transaction.transaction_time - timedelta(hours=1),
+                "end_time": saved_transaction.transaction_time + timedelta(hours=1),
+            }
         )
     )
     assert len(result) == 1
@@ -69,7 +76,7 @@ def test_compute_daily_total(db: Database, service: TransactionsService):
         )
         serialized_transaction = TransactionsService.serialize_transaction(transaction)
         db.transactions.insert_one(serialized_transaction)
-    result = service.compute_daily_total(account_id)
+    result = service.compute_daily_total({"account_id": account_id})
     today_total = next(result)
     assert today_total["total_amount"] == expected_total
 
