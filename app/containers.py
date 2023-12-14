@@ -82,7 +82,7 @@ class Container(containers.DeclarativeContainer):
 
     mq_params = providers.Singleton(pika.URLParameters, config.mq_url)
     mq_connection = providers.Factory(pika.BlockingConnection, mq_params)
-    queue_config = providers.Object(lambda config: QueueConfig.construct(**config))
+    queue_config = providers.Object(lambda config: QueueConfig(**config))
     user_created_consumer = providers.Factory(
         UserCreatedConsumer,
         mq_connection,

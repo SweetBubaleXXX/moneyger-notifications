@@ -1,6 +1,7 @@
 from typing import Iterable, Literal
 
 from celery.schedules import crontab
+from pika.exchange_type import ExchangeType
 from pydantic import (
     AmqpDsn,
     AnyUrl,
@@ -12,9 +13,16 @@ from pydantic import (
 )
 
 
-class QueueConfig(BaseModel):
-    exchange: str
+class ExchangeConfig(BaseModel):
     name: str
+    exchange_type: ExchangeType = ExchangeType.topic
+    durable: bool = True
+
+
+class QueueConfig(BaseModel):
+    exchange: ExchangeConfig
+    name: str
+    durable: bool = True
     bindings: Iterable[str]
 
 
@@ -84,8 +92,12 @@ class Settings(BaseSettings):
     message_storage_max_size: int = 100
 
     mq_url: AmqpDsn | None
-    mq_users_exchange: str = "users_exchange"
-    mq_messages_exchange: str = "messages_exchange"
+    mq_users_exchange: ExchangeConfig = ExchangeConfig(name="users_exchange")
+    mq_transactions_exchange: ExchangeConfig = ExchangeConfig(
+        name="transactions_exchange"
+    )
+    mq_messages_exchange: ExchangeConfig = ExchangeConfig(name="messages_exchange")
+
     mq_user_created_queue: QueueConfig = UserCreatedQueueConfig(
         exchange=mq_users_exchange
     )
@@ -96,10 +108,10 @@ class Settings(BaseSettings):
         exchange=mq_users_exchange
     )
     mq_transactions_added_queue: QueueConfig = TransactionsAddedQueueConfig(
-        exchange=mq_users_exchange
+        exchange=mq_transactions_exchange
     )
     mq_transactions_deleted_queue: QueueConfig = TransactionsDeletedQueueConfig(
-        exchange=mq_users_exchange
+        exchange=mq_transactions_exchange
     )
     mq_message_sent_queue: QueueConfig = MessageSentQueueConfig(
         exchange=mq_messages_exchange
