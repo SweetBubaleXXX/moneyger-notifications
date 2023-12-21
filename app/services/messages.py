@@ -1,5 +1,5 @@
 from abc import ABCMeta, abstractmethod
-from collections.abc import Collection, Iterable, Iterator
+from collections.abc import Collection, Iterator
 from typing import Any, Callable, Generic, Self, TypeVar
 
 from redis import Redis
@@ -17,7 +17,7 @@ class MessageStorage(Collection, Generic[T], metaclass=ABCMeta):
         self._storage_exhausted_listeners: set[Callable[[Self], Any]] = set()
 
     @abstractmethod
-    def get_all(self) -> Iterable[Message]:
+    def get_all(self) -> Collection[Message]:
         ...
 
     @abstractmethod
@@ -71,7 +71,7 @@ class RedisMessageStorage(MessageStorage[Redis]):
     def __iter__(self) -> Iterator[Message]:
         return iter(self.get_all())
 
-    def get_all(self) -> Iterable[Message]:
+    def get_all(self) -> Collection[Message]:
         with self._lock:
             messages = []
             for message_id in self._get_message_ids():
