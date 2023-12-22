@@ -4,3 +4,5 @@ services:
   server:
     ports:
       - "${PORT:-80}:80"
+    expose:
+      - 80
