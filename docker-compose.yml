@@ -26,16 +26,25 @@ services:
   mq_consumer:
     extends:
       service: server
+    depends_on:
+      - db
+      - redis
     command: python ./start_consumers.py
 
   celery_worker:
     extends:
       service: server
+    depends_on:
+      - db
+      - redis
     command: celery -A app.celery.entrypoint worker --autoscale 2,1 --loglevel INFO --events
 
   celery_beat:
     extends:
       service: server
+    depends_on:
+      - db
+      - redis
     command: celery -A app.celery.entrypoint beat -s /var/lib/celery/celerybeat-schedule --loglevel INFO
     volumes:
       - celery_beat_data:/var/lib/celery
