@@ -69,16 +69,11 @@ services:
     ports:
       - "6379:6379"
 
-  rabbitmq:
-    extends:
-      file: docker-compose.yml
-      service: rabbitmq
-    restart: "no"
-    ports:
-      - "5672:5672"
-      - "15672:15672"
-
 volumes:
   database_data:
-  rabbitmq_data:
   celery_beat_data:
+
+networks:
+  moneyger_rabbitmq:
+    name: ${RABBITMQ_NETWORK:-moneyger-rabbitmq}
+    external: ${RABBITMQ_NETWORK_EXTERNAL:-false}

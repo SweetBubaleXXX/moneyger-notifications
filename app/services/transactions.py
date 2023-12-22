@@ -1,16 +1,23 @@
 from collections.abc import Collection
 from datetime import date, datetime
 from decimal import Decimal
-from typing import Any, Iterable, Iterator, TypedDict
+from typing import Any, Iterable, Iterator, NotRequired, TypedDict
 
 from bson.decimal128 import Decimal128
 from pymongo import ASCENDING, IndexModel, ReplaceOne
 from pymongo.database import Database
 
-from ..models import Transaction
+from ..models import Transaction, TransactionType
 from .exceptions import NotFound
 
 _DATE_FORMAT = "%Y-%m-%d"
+
+
+class TransactionFilters(TypedDict):
+    account_id: NotRequired[int]
+    transaction_type: NotRequired[TransactionType]
+    start_time: NotRequired[datetime]
+    end_time: NotRequired[datetime]
 
 
 class TransactionTotalByDate(TypedDict):
@@ -25,6 +32,7 @@ class TransactionsService:
         self.collection.create_indexes(
             [
                 IndexModel("transaction_id", unique=True),
+                IndexModel("transaction_type"),
                 IndexModel("account_id"),
             ]
         )
@@ -35,25 +43,18 @@ class TransactionsService:
         serialized_transaction["amount"] = Decimal128(transaction.amount)
         return serialized_transaction
 
-    def filter_transactions(
-        self,
-        account_id: int,
-        start_time: datetime | None = None,
-        end_time: datetime | None = None,
-    ) -> Iterator[Transaction]:
-        filters = self._create_filters(account_id, start_time, end_time)
-        cursor = self.collection.find(filters).sort("transaction_time", ASCENDING)
+    def filter_transactions(self, filters: TransactionFilters) -> Iterator[Transaction]:
+        query = self._create_query(filters)
+        cursor = self.collection.find(query).sort("transaction_time", ASCENDING)
         for transaction in cursor:
             yield Transaction(**transaction)
 
     def compute_daily_total(
         self,
-        account_id: int,
-        start_time: datetime | None = None,
-        end_time: datetime | None = None,
+        filters: TransactionFilters,
     ) -> Iterator[TransactionTotalByDate]:
-        filters = self._create_filters(account_id, start_time, end_time)
-        pipeline = self._create_daily_total_pipeline(filters)
+        query = self._create_query(filters)
+        pipeline = self._create_daily_total_pipeline(query)
         cursor = self.collection.aggregate(pipeline)
         for result in cursor:
             yield TransactionTotalByDate(
@@ -81,26 +82,25 @@ class TransactionsService:
         if delete_result.deleted_count != len(transaction_ids):
             raise NotFound("Some transactions not found")
 
-    def _create_filters(
-        self,
-        account_id: int,
-        start_time: datetime | None = None,
-        end_time: datetime | None = None,
-    ) -> dict[str, Any]:
-        filters = {"account_id": account_id}
+    def _create_query(self, filters: TransactionFilters) -> dict[str, Any]:
+        query_filters = filters.copy()
+        start_time = query_filters.pop("start_time", None)
+        end_time = query_filters.pop("end_time", None)
+
         time_range_filters = {}
         if start_time:
             time_range_filters["$gte"] = start_time
         if end_time:
             time_range_filters["$lt"] = end_time
-        if time_range_filters:
-            filters["transaction_time"] = time_range_filters
-        return filters
 
-    def _create_daily_total_pipeline(self, filters: dict[str, Any]) -> list[dict]:
+        if time_range_filters:
+            query_filters["transaction_time"] = time_range_filters
+        return query_filters
+
+    def _create_daily_total_pipeline(self, query: dict[str, Any]) -> list[dict]:
         return [
             {
-                "$match": filters,
+                "$match": query,
             },
             {
                 "$group": {

@@ -22,9 +22,14 @@ class Consumer(metaclass=ABCMeta):
     def __init__(self, connection: pika.BaseConnection, queue: QueueConfig) -> None:
         self.connection = connection
         self.channel = connection.channel()
-        self.channel.queue_declare(queue.name, durable=True)
+        self.channel.exchange_declare(
+            queue.exchange.name,
+            queue.exchange.exchange_type,
+            durable=queue.exchange.durable,
+        )
+        self.channel.queue_declare(queue.name, durable=queue.durable)
         for routing_key in queue.bindings:
-            self.channel.queue_bind(queue.name, queue.exchange, routing_key)
+            self.channel.queue_bind(queue.name, queue.exchange.name, routing_key)
         self.channel.basic_consume(queue.name, self.__callback)
 
     @abstractmethod

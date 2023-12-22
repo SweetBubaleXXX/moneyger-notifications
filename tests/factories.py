@@ -21,8 +21,9 @@ class TransactionFactory(factory.Factory):
     class Meta:
         model = models.Transaction
 
-    transaction_id = factory.Sequence(int)
     account_id = 1
+    transaction_id = factory.Sequence(int)
+    transaction_type = "OUT"
     amount = FuzzyDecimal(1, 1000)
     transaction_time = factory.LazyAttribute(lambda *_: datetime.utcnow())
 

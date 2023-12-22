@@ -36,8 +36,11 @@ class PredictionsService:
 
     def _get_totals(self, account_id: int, days: int) -> pd.DataFrame:
         daily_totals = self.transactions_service.compute_daily_total(
-            account_id,
-            start_time=datetime.now() - timedelta(days=days),
+            {
+                "account_id": account_id,
+                "transaction_type": "OUT",
+                "start_time": datetime.now() - timedelta(days=days),
+            }
         )
         dataset = pd.DataFrame(daily_totals)
         if not len(dataset):

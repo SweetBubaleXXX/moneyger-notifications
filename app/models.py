@@ -1,10 +1,12 @@
 from datetime import datetime
 from decimal import Decimal
-from typing import Self, Type, TypeVar
+from typing import Literal, Self, Type, TypeAlias, TypeVar
 
 from pydantic import BaseModel, EmailStr
 
 T = TypeVar("T", bound=BaseModel, covariant=True)
+
+TransactionType: TypeAlias = Literal["IN", "OUT"]
 
 
 class UserCredentials(BaseModel):
@@ -62,7 +64,8 @@ class Message(BaseModel):
 
 
 class Transaction(BaseModel):
-    transaction_id: int
     account_id: int
+    transaction_id: int
+    transaction_type: TransactionType
     amount: Decimal
     transaction_time: datetime
