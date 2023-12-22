@@ -60,6 +60,8 @@ class Settings(BaseSettings):
     testing: bool = False
     log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"] = "INFO"
 
+    xff_trusted_proxy_depth: int = 1
+
     database_url: MongoDsn | None
     database_user: str | None
     database_password: str | None

@@ -24,7 +24,13 @@ def create_app(container: Container | None = None) -> Flask:
     app.testing = container.config.testing()
     app.logger.setLevel(container.config.log_level())
     app.container = container
-    app.wsgi_app = ProxyFix(app.wsgi_app)
+    app.wsgi_app = ProxyFix(
+        app.wsgi_app,
+        x_for=container.config.xff_trusted_proxy_depth,
+        x_proto=container.config.xff_trusted_proxy_depth,
+        x_host=container.config.xff_trusted_proxy_depth,
+        x_port=container.config.xff_trusted_proxy_depth,
+    )
     app.wsgi_app = MiddlewareManager(app)
     app.wsgi_app.add_middleware(auth.JwtAuthMiddleware)
     app.register_error_handler(HTTPException, handle_http_exception)
