@@ -1,0 +1,21 @@
+<p>
+  Hi!
+</p>
+<p>
+  You have <b>{{ messages|count }}</b> new messages in support chat.
+</p>
+<p>Here are the latest messages:</p>
+<ul>
+  {% for message in messages %}
+  <li>
+    <strong>From: </strong>{{ message.sender|e }}
+    {% if message.from_admin %}
+    <span><i>Admin</i></span>
+    {% endif %}
+    <br>
+    <strong>Time: </strong>{{ message.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}
+    <br>
+    <strong>Message: </strong>{{ message.text|e }}
+  </li>
+  {% endfor %}
+</ul>

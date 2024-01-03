@@ -1,0 +1,91 @@
+version: "3.8"
+
+services:
+  server:
+    extends:
+      file: docker-compose.yml
+      service: server
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    depends_on:
+      - db
+      - redis
+    command: poetry run flask --app app.application run -h 0.0.0.0 -p 80
+    restart: "no"
+    volumes:
+      - ./:/app:ro
+    ports:
+      - "${PORT:-80}:80"
+
+  mq_consumer:
+    extends:
+      file: docker-compose.yml
+      service: mq_consumer
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    depends_on:
+      - db
+      - redis
+    command: poetry run python ./start_consumers.py
+    restart: "no"
+    volumes:
+      - ./:/app:ro
+
+  celery_worker:
+    extends:
+      file: docker-compose.yml
+      service: celery_worker
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    depends_on:
+      - db
+      - redis
+    command: poetry run celery -A app.celery.entrypoint worker --autoscale 2,1 --loglevel INFO --events
+    restart: "no"
+    volumes:
+      - ./:/app:ro
+
+  celery_beat:
+    extends:
+      file: docker-compose.yml
+      service: celery_beat
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    depends_on:
+      - db
+      - redis
+    command: poetry run celery -A app.celery.entrypoint beat -s /var/lib/celery/celerybeat-schedule --loglevel INFO
+    restart: "no"
+    volumes:
+      - ./:/app:ro
+      - celery_beat_data:/var/lib/celery
+
+  db:
+    extends:
+      file: docker-compose.yml
+      service: db
+    restart: "no"
+    ports:
+      - "27017:27017"
+
+  redis:
+    extends:
+      file: docker-compose.yml
+      service: redis
+    command: redis-server --loglevel debug --requirepass ${REDIS_PASSWORD:?}
+    restart: "no"
+    ports:
+      - "6379:6379"
+
+volumes:
+  database_data:
+  celery_beat_data:
+
+networks:
+  service_public_network:
+    name: ${SERVICE_NETWORK:-moneyger-notifications}
+    external: ${SERVICE_NETWORK_EXTERNAL:-false}
