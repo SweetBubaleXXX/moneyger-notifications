@@ -48,7 +48,7 @@ services:
       - celery_beat_data:/var/lib/celery
 
   db:
-    image: mongo:7
+    image: mongo:4
     restart: unless-stopped
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${DATABASE_USER:?}
