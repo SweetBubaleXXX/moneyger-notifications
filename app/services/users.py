@@ -2,6 +2,7 @@ from typing import Any, Iterator, Mapping
 
 from pymongo import ReturnDocument
 from pymongo.database import Database
+from pymongo.errors import DuplicateKeyError
 
 from ..models import User
 from .exceptions import AlreadyExists, NotFound
@@ -11,6 +12,7 @@ class UsersService:
     def __init__(self, db: Database):
         self.db = db
         self.collection = self.db.users
+        self.collection.create_index("account_id", unique=True)
 
     def get_user_by_id(self, account_id: int) -> User:
         user = self.collection.find_one({"account_id": account_id})
@@ -22,10 +24,12 @@ class UsersService:
             yield User(**user)
 
     def create_user(self, user: User) -> User:
-        existing_user = self.collection.find_one({"account_id": user.account_id})
-        if existing_user:
-            raise AlreadyExists(f"Account with id({user.account_id}) already exists")
-        self.collection.insert_one(user.dict())
+        try:
+            self.collection.insert_one(user.dict())
+        except DuplicateKeyError as exc:
+            raise AlreadyExists(
+                f"Account with id({user.account_id}) already exists"
+            ) from exc
         return user
 
     def update_user(self, user: User) -> User:

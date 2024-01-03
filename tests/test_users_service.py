@@ -54,12 +54,7 @@ def test_create_user(
     assert user_in_db
 
 
-def test_create_user_already_exists(
-    db: Database,
-    service: UsersService,
-    saved_user: User,
-):
-    db.users.insert_one(saved_user.dict())
+def test_create_user_already_exists(service: UsersService, saved_user: User):
     with pytest.raises(AlreadyExists):
         service.create_user(saved_user)
 
