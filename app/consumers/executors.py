@@ -6,6 +6,8 @@ from retry import retry
 
 from .base import Consumer
 
+_RETRY_DELAY = 3
+
 
 class StoppedConsuming(Exception):
     pass
@@ -15,7 +17,7 @@ class BlockingConsumerExecutor:
     def __init__(self, get_consumer: Callable[..., Consumer]) -> None:
         self._consumer_factory = get_consumer
 
-    @retry(delay=3)
+    @retry(delay=_RETRY_DELAY)
     def __call__(self) -> None:
         consumer = self._create_consumer()
         logging.info("Started consuming")
