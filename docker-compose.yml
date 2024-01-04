@@ -2,7 +2,7 @@ version: "3.8"
 
 services:
   server:
-    image: sweetbubalexxx/moneyger-notifications:v1.0.0
+    image: sweetbubalexxx/moneyger-notifications:v1.0.1
     command: gunicorn -c gunicorn.conf.py 'app.application:create_app()'
     restart: unless-stopped
     depends_on:
