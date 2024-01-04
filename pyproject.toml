@@ -7,7 +7,7 @@ disable_error_code = ["attr-defined"]
 
 [tool.poetry]
 name = "moneyger-notifications"
-version = "1.0.0"
+version = "1.0.1"
 description = "Notifications service"
 authors = ["SweetBubaleXXX <70811772+SweetBubaleXXX@users.noreply.github.com>"]
 license = "MIT"

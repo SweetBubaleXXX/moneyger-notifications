@@ -31,11 +31,15 @@ def _create_transactions(db: Database, account_id: int):
 
 
 @pytest.fixture
-def predictions_recipients(db: Database):
+def subscribed_users(db: Database):
     recipients = []
     for _ in range(5):
-        user = UserFactory(subscribed_to_predictions=True)
+        user = UserFactory(
+            subscribed_to_chat=True,
+            subscribed_to_predictions=True,
+        )
         _create_transactions(db, user.account_id)
+        db.users.insert_one(user.dict())
         recipients.append(user)
     return recipients
 
@@ -50,11 +54,15 @@ def email_connection(container: Container):
     return container.email_connection()
 
 
-def test_notify_recent_messages(email_connection: EmailSender, storage: MessageStorage):
+def test_notify_recent_messages(
+    email_connection: EmailSender,
+    storage: MessageStorage,
+    subscribed_users: list[User],
+):
     for _ in range(storage.storage_size_limit):
         message = MessageFactory()
         storage.push(message)
-    email_connection.send.assert_called_once()
+    assert email_connection.send.call_count == len(subscribed_users)
     assert len(storage) == 0
 
 
@@ -78,7 +86,7 @@ def test_send_predictions_empty(
 def test_send_predictions(
     email_connection: EmailSender,
     email_service: EmailService,
-    predictions_recipients: list[User],
+    subscribed_users: list[User],
 ):
     email_service.send_predictions(PredictionPeriod.WEEK)
-    email_connection.send.call_count == len(predictions_recipients)
+    assert email_connection.send.call_count == len(subscribed_users)
