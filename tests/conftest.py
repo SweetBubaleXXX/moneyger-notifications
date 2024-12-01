@@ -59,17 +59,6 @@ def storage(container: Container):
 
 
 @pytest.fixture
-def app(container: Container, mock_database, mock_cache):
-    app = application.create_app(container)
-    return app
-
-
-@pytest.fixture()
-def client(app):
-    return app.test_client()
-
-
-@pytest.fixture
 def user():
     return factories.UserFactory()
 

@@ -18,7 +18,6 @@ You can create `.env` file in project root directory.
 #### Optional variables:
 
 - `LOG_LEVEL`
-- `XFF_TRUSTED_PROXY_DEPTH` _number_
 - `DEFAULT_DATABASE`
 - `MAIL_PORT` _number_
 - `MESSAGE_STORAGE_MAX_SIZE` _number_

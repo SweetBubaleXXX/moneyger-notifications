@@ -34,10 +34,7 @@ def _create_transactions(db: Database, account_id: int):
 def subscribed_users(db: Database):
     recipients = []
     for _ in range(5):
-        user = UserFactory(
-            subscribed_to_chat=True,
-            subscribed_to_predictions=True,
-        )
+        user = UserFactory(is_admin=True)
         _create_transactions(db, user.account_id)
         db.users.insert_one(user.dict())
         recipients.append(user)

@@ -33,8 +33,7 @@ class Consumer(metaclass=ABCMeta):
         self.channel.basic_consume(queue.name, self.__callback)
 
     @abstractmethod
-    def process_message(self, context: MessageContext) -> None:
-        ...
+    def process_message(self, context: MessageContext) -> None: ...
 
     def acknowledge_positive(self, context: MessageContext) -> None:
         context.channel.basic_ack(context.method.delivery_tag)
@@ -59,7 +58,9 @@ class Consumer(metaclass=ABCMeta):
         properties: pika.BasicProperties,
         body: bytes,
     ):
-        logging.info("Message with length of %d arrived", len(body))
+        logging.info(
+            "%s - Message with length of %d arrived", self.__class__.__name__, len(body)
+        )
         context = MessageContext(channel, method, properties, body)
         try:
             self.process_message(context)
@@ -69,8 +70,6 @@ class Consumer(metaclass=ABCMeta):
 
 
 class ConsumerExecutor(Protocol):
-    def __init__(self, get_consumer: Callable[..., Consumer]) -> None:
-        ...
+    def __init__(self, get_consumer: Callable[..., Consumer]) -> None: ...
 
-    def __call__(self) -> None:
-        ...
+    def __call__(self) -> None: ...

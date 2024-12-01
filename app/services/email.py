@@ -24,7 +24,7 @@ class EmailService:
         message_storage.add_storage_exhausted_listener(self.notify_recent_messages)
 
     def notify_recent_messages(self, message_storage: MessageStorage) -> None:
-        subscribed_users = self.users_service.filter_users({"subscribed_to_chat": True})
+        subscribed_users = self.users_service.filter_users({"is_admin": True})
         recent_messages = message_storage.get_all()
         if not recent_messages:
             return
@@ -33,9 +33,7 @@ class EmailService:
         message_storage.clear()
 
     def send_predictions(self, period: PredictionPeriod) -> None:
-        subscribed_users = self.users_service.filter_users(
-            {"subscribed_to_predictions": True}
-        )
+        subscribed_users = self.users_service.filter_users({"is_admin": True})
         with self.connection:
             for recipient in subscribed_users:
                 try:

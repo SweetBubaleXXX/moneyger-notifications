@@ -12,7 +12,6 @@ from .consumers.message_sent import MessageSentConsumer
 from .consumers.transactions_added import TransactionsAddedConsumer
 from .consumers.transactions_deleted import TransactionsDeletedConsumer
 from .consumers.user_created import UserCreatedConsumer
-from .consumers.user_credentials_rpc import UserCredentialsRpc
 from .consumers.user_deleted import UserDeletedConsumer
 from .services.email import EmailService
 from .services.messages import RedisMessageStorage
@@ -25,8 +24,6 @@ class Container(containers.DeclarativeContainer):
     wiring_config = containers.WiringConfiguration(
         packages=[
             ".consumers",
-            ".middleware",
-            ".resources",
             ".services",
         ],
         modules=[
@@ -97,12 +94,6 @@ class Container(containers.DeclarativeContainer):
         queue_config.provided.call(config.mq_user_deleted_queue),
         users_service,
     )
-    user_credentials_rpc = providers.Factory(
-        UserCredentialsRpc,
-        mq_connection,
-        queue_config.provided.call(config.mq_user_credentials_rpc_queue),
-        users_service,
-    )
     transactions_added_consumer = providers.Factory(
         TransactionsAddedConsumer,
         mq_connection,
@@ -124,7 +115,6 @@ class Container(containers.DeclarativeContainer):
     consumer_executors: list[ConsumerExecutor] = providers.List(
         providers.Factory(BlockingConsumerExecutor, user_created_consumer.provider),
         providers.Factory(BlockingConsumerExecutor, user_deleted_consumer.provider),
-        providers.Factory(BlockingConsumerExecutor, user_credentials_rpc.provider),
         providers.Factory(
             BlockingConsumerExecutor,
             transactions_added_consumer.provider,

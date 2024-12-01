@@ -1,6 +1,6 @@
 from datetime import datetime
 from decimal import Decimal
-from typing import Literal, Self, Type, TypeAlias, TypeVar
+from typing import Literal, TypeAlias, TypeVar
 
 from pydantic import BaseModel, EmailStr
 
@@ -9,44 +9,10 @@ T = TypeVar("T", bound=BaseModel, covariant=True)
 TransactionType: TypeAlias = Literal["IN", "OUT"]
 
 
-class UserCredentials(BaseModel):
+class User(BaseModel):
     account_id: int
     email: EmailStr
-    token: str
-
-
-class UserSettings(BaseModel):
-    subscribed_to_chat: bool = False
-    subscribed_to_predictions: bool = False
-
-
-class User(UserCredentials, UserSettings):
-    @property
-    def credentials(self) -> UserCredentials:
-        return self._construct_model(UserCredentials)
-
-    @property
-    def settings(self) -> UserSettings:
-        return self._construct_model(UserSettings)
-
-    def copy_with_updated_settings(self, settings: UserSettings) -> Self:
-        updated_user = self.copy()
-        for field, value in settings:
-            updated_user.__setattr__(field, value)
-        return updated_user
-
-    def _construct_model(self, model: Type[T]) -> T:
-        common_fields = self.dict(include=model.__fields__.keys())
-        return model.construct(**common_fields)
-
-
-class JwtTokenPayload(BaseModel):
-    account_id: int
-
-
-class UserCredentialsResponse(BaseModel):
-    success: bool
-    result: UserCredentials | None
+    is_admin: bool = False
 
 
 class Message(BaseModel):

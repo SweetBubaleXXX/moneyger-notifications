@@ -34,8 +34,8 @@ class UsersService:
 
     def update_user(self, user: User) -> User:
         updated_user = self.collection.find_one_and_update(
-            user.credentials.dict(),
-            {"$set": user.settings.dict()},
+            {"account_id": user.account_id},
+            {"$set": user.dict(include={"email", "is_admin"})},
             return_document=ReturnDocument.AFTER,
         )
         return self._return_user_or_error(updated_user)

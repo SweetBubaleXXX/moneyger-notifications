@@ -19,7 +19,7 @@ def test_get_user_by_id(
     saved_user: User,
 ):
     found_user = service.get_user_by_id(saved_user.account_id)
-    assert found_user.token == saved_user.token
+    assert found_user.email == saved_user.email
 
 
 def test_filter_users_not_found(
@@ -36,12 +36,12 @@ def test_filter_users(
 ):
     user_count = 10
     for i in range(user_count):
-        user = UserFactory(subscribed_to_chat=i % 2)
+        user = UserFactory(is_admin=i % 2)
         db.users.insert_one(user.dict())
-    result = list(service.filter_users({"subscribed_to_chat": True}))
+    result = list(service.filter_users({"is_admin": True}))
     assert len(result) == user_count / 2
     for user in result:
-        assert user.subscribed_to_chat
+        assert user.is_admin
 
 
 def test_create_user(
@@ -65,10 +65,10 @@ def test_update_user(
 ):
     new_user_info = {
         **saved_user.dict(),
-        "subscribed_to_chat": not saved_user.subscribed_to_chat,
+        "is_admin": not saved_user.is_admin,
     }
     updated_user = service.update_user(User(**new_user_info))
-    assert updated_user.subscribed_to_chat == new_user_info["subscribed_to_chat"]
+    assert updated_user.is_admin == new_user_info["is_admin"]
 
 
 def test_update_user_not_found(

@@ -36,11 +36,6 @@ class UserDeletedQueueConfig(QueueConfig):
     bindings: Iterable[str] = ["user.event.deleted"]
 
 
-class UserCredentialsRpcQueue(QueueConfig):
-    name: str = "request_user_credentials_queue"
-    bindings: Iterable[str] = ["user.request.credentials"]
-
-
 class TransactionsAddedQueueConfig(QueueConfig):
     name: str = "transaction_updates_queue"
     bindings: Iterable[str] = ["transaction.event.created", "transaction.event.updated"]
@@ -59,8 +54,6 @@ class MessageSentQueueConfig(QueueConfig):
 class Settings(BaseSettings):
     testing: bool = False
     log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"] = "INFO"
-
-    xff_trusted_proxy_depth: int = 1
 
     database_url: MongoDsn | None
     database_user: str | None
@@ -104,9 +97,6 @@ class Settings(BaseSettings):
         exchange=mq_users_exchange
     )
     mq_user_deleted_queue: QueueConfig = UserDeletedQueueConfig(
-        exchange=mq_users_exchange
-    )
-    mq_user_credentials_rpc_queue: QueueConfig = UserCredentialsRpcQueue(
         exchange=mq_users_exchange
     )
     mq_transactions_added_queue: QueueConfig = TransactionsAddedQueueConfig(

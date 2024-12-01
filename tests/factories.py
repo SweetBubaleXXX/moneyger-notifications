@@ -12,9 +12,6 @@ class UserFactory(factory.Factory):
 
     account_id = factory.Sequence(int)
     email = factory.Faker("email")
-    token = FuzzyText(length=32)
-    subscribed_to_chat = False
-    subscribed_to_predictions = False
 
 
 class TransactionFactory(factory.Factory):
