@@ -28,4 +28,4 @@ COPY --from=builder ${VIRTUAL_ENV} ${VIRTUAL_ENV}
 
 COPY ./app ./app
 
-COPY ./start_consumers.py ./
+COPY ./start_consumers.py ./send_predictions.py ./notify_recent_messages.py ./

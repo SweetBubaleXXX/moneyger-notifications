@@ -31,6 +31,11 @@ class UserCreatedQueueConfig(QueueConfig):
     bindings: Iterable[str] = ["user.event.created"]
 
 
+class UserUpdatedQueueConfig(QueueConfig):
+    name: str = "user_update_queue"
+    bindings: Iterable[str] = ["user.event.updated"]
+
+
 class UserDeletedQueueConfig(QueueConfig):
     name: str = "unsubscribe_user_queue"
     bindings: Iterable[str] = ["user.event.deleted"]
@@ -94,6 +99,9 @@ class Settings(BaseSettings):
     mq_messages_exchange: ExchangeConfig = ExchangeConfig(name="messages_exchange")
 
     mq_user_created_queue: QueueConfig = UserCreatedQueueConfig(
+        exchange=mq_users_exchange
+    )
+    mq_user_updated_queue: QueueConfig = UserUpdatedQueueConfig(
         exchange=mq_users_exchange
     )
     mq_user_deleted_queue: QueueConfig = UserDeletedQueueConfig(
